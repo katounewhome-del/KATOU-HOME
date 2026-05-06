@@ -706,13 +706,42 @@ dd {
   letter-spacing: 0.06em;
 }
 
+.seedance-auto-btn {
+  background: linear-gradient(135deg, #ec4899, #f97316, #eab308);
+  background-size: 200% 200%;
+  animation: gradient-shift 4s ease infinite;
+  border-radius: 16px;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 800;
+  padding: 18px 22px;
+  transition: opacity 0.12s, transform 0.1s;
+  letter-spacing: 0.02em;
+}
+
+.seedance-auto-btn:hover:not(:disabled) {
+  opacity: 0.94;
+  transform: translateY(-1px);
+}
+
+.seedance-auto-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  animation: none;
+}
+
+@keyframes gradient-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
 .seedance-gen-btn {
   background: linear-gradient(135deg, #7c3aed, #3b82f6);
   border-radius: 14px;
   color: #fff;
-  font-size: 14px;
-  font-weight: 800;
-  padding: 14px 20px;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 12px 18px;
   transition: opacity 0.12s, transform 0.1s;
 }
 

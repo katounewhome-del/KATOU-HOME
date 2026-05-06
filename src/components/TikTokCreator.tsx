@@ -804,6 +804,14 @@ export function TikTokCreator() {
     drawFrame(ctx, t)
   }, [drawFrame, seedanceVideoEl])
 
+  // Keep latest draw function refs for use after async state updates
+  const drawFnRef = useRef(drawFrame)
+  const drawFnAsyncRef = useRef(drawFrameOffline)
+  useEffect(() => {
+    drawFnRef.current = drawFrame
+    drawFnAsyncRef.current = drawFrameOffline
+  }, [drawFrame, drawFrameOffline])
+
   // ── Preview loop ────────────────────────────────────────────────────────────
 
   useEffect(() => {
@@ -823,7 +831,7 @@ export function TikTokCreator() {
 
   // ── Handlers ────────────────────────────────────────────────────────────────
 
-  const handleExport = async () => {
+  const runExport = async () => {
     const canvas = canvasRef.current
     if (!canvas || exportState === 'encoding') return
     cancelAnimationFrame(rafRef.current)
@@ -833,7 +841,7 @@ export function TikTokCreator() {
     setProgress(0)
 
     try {
-      const { blob, ext } = await exportVideo(canvas, drawFrame, drawFrameOffline, config.duration, setProgress)
+      const { blob, ext } = await exportVideo(canvas, drawFnRef.current, drawFnAsyncRef.current, config.duration, setProgress)
       if (urlCleanupRef.current) URL.revokeObjectURL(urlCleanupRef.current)
       const url = URL.createObjectURL(blob)
       urlCleanupRef.current = url
@@ -841,12 +849,19 @@ export function TikTokCreator() {
       setGeneratedExt(ext)
       setExportState('done')
       setPreviewView('video')
+      // Auto-download as well for convenience
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `tiktok_${config.title}_${Date.now()}.${ext}`
+      a.click()
     } catch {
       setExportState('idle')
     } finally {
       previewStartRef.current = null
     }
   }
+
+  const handleExport = () => runExport()
 
   const handleDownload = () => {
     if (!generatedUrl) return
@@ -911,6 +926,54 @@ export function TikTokCreator() {
     setSeedanceVideoEl(null)
     setSeedanceStatus(null)
     setSeedanceError('')
+  }
+
+  const handleFullAuto = async () => {
+    if (!seedanceApiKey.trim()) {
+      setSeedanceError('まず fal.ai のAPIキーを入力してください')
+      return
+    }
+    setSeedanceError('')
+
+    const promptMap: Record<string, string> = {
+      '返報性の原理': 'two hands gently exchanging a wrapped gift, warm cinematic sunset lighting, slow motion, vertical 9:16',
+      'バンドワゴン効果': 'large crowd of people walking together in a busy modern city street, dynamic motion blur, vertical 9:16',
+      'アンカリング効果': 'glowing numbers and price tags floating in dark space, ethereal blue light, abstract cinematic',
+      'カリギュラ効果': 'mysterious wooden door slightly ajar with red light leaking out, dramatic atmosphere, cinematic',
+      'ハロー効果': 'silhouette of a person with bright golden halo behind them, ethereal soft glow, cinematic',
+      '吊り橋効果': 'long swaying suspension bridge over misty deep canyon, dramatic vertical depth, cinematic',
+      '認知的不協和': 'cracked mirror showing two contrasting reflections, artistic abstract scene, cinematic',
+      'ツァイガルニク効果': 'unfinished jigsaw puzzle on a wooden desk, warm lamp light, mysterious atmosphere',
+      'ピーク・エンドの法則': 'spectacular fireworks finale lighting up the night sky, vivid celebration, cinematic',
+      'フット・イン・ザ・ドア': 'wooden front door slowly opening with warm golden light spilling out, inviting cinematic',
+    }
+    const prompt = promptMap[config.title] ?? `cinematic atmospheric vertical scene representing the concept "${config.title}", soft lighting, 9:16`
+    setSeedancePrompt(prompt)
+
+    try {
+      const ctrl = new AbortController()
+      seedanceAbortRef.current = ctrl
+      const url = await generateSeedanceVideo(
+        seedanceApiKey,
+        { prompt, aspect_ratio: '9:16', duration: '5', resolution: '720p' },
+        setSeedanceStatus,
+        ctrl.signal,
+      )
+      const video = await loadVideoElement(url)
+      setBgImageEl(null)
+      setBgPreset('none')
+      setSeedanceVideoEl(video)
+
+      // Wait for state propagation + draw fn refs to update
+      await new Promise((r) => setTimeout(r, 350))
+
+      // Now run the full export with up-to-date draw functions
+      await runExport()
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : '不明なエラー'
+      setSeedanceError(msg)
+      setSeedanceStatus(null)
+    }
   }
 
   const update = <K extends keyof VideoConfig>(key: K, value: VideoConfig[K]) =>
@@ -1032,9 +1095,18 @@ export function TikTokCreator() {
                 {seedanceStatus && (seedanceStatus.status === 'submitting' || seedanceStatus.status === 'queued' || seedanceStatus.status === 'in_progress') ? (
                   <button className="seedance-cancel-btn" onClick={handleCancelSeedance}>{seedanceStatus.message} (キャンセル)</button>
                 ) : (
-                  <button className="seedance-gen-btn" onClick={handleGenerateSeedance} disabled={!seedanceApiKey.trim() || !seedancePrompt.trim()}>
-                    🎨  AI動画を生成（fal.ai）
-                  </button>
+                  <>
+                    <button
+                      className="seedance-auto-btn"
+                      onClick={handleFullAuto}
+                      disabled={!seedanceApiKey.trim() || exportState === 'encoding'}
+                    >
+                      🚀  全自動でMP4を作成（プロンプト→AI動画→合成→MP4まで）
+                    </button>
+                    <button className="seedance-gen-btn" onClick={handleGenerateSeedance} disabled={!seedanceApiKey.trim() || !seedancePrompt.trim()}>
+                      🎨  AI動画だけ生成（背景に適用）
+                    </button>
+                  </>
                 )}
 
                 {seedanceError && <p className="seedance-error">⚠ {seedanceError}</p>}
