@@ -14,9 +14,9 @@ interface VideoConfig {
 }
 
 interface PsychFact {
+  number: string
   title: string
   subtitle: string
-  number: string
 }
 
 const PSYCH_FACTS: PsychFact[] = [
@@ -42,19 +42,19 @@ const PSYCH_FACTS: PsychFact[] = [
     number: 'No.4',
     title: 'カリギュラ効果',
     subtitle:
-      '「見てはいけない」「やってはいけない」と言われるほど気になってしまう心理。禁止が欲求を高めます。',
+      '「見てはいけない」と言われるほど気になる心理。禁止されると欲求が高まるのはこのためです。',
   },
   {
     number: 'No.5',
     title: 'ハロー効果',
     subtitle:
-      '外見が良い人は仕事もできると思い込むなど、一つの特徴が全体の評価に影響してしまう心理です。',
+      '外見が良い人は仕事もできると思い込む心理。一つの特徴が全体の評価に影響してしまいます。',
   },
   {
     number: 'No.6',
     title: '吊り橋効果',
     subtitle:
-      'ドキドキする状況で一緒にいる人に恋愛感情を抱きやすくなる心理。不安や興奮が恋と混同されます。',
+      'ドキドキする状況で一緒にいる人に恋愛感情を抱きやすくなる心理。不安が恋と混同されます。',
   },
   {
     number: 'No.7',
@@ -66,19 +66,19 @@ const PSYCH_FACTS: PsychFact[] = [
     number: 'No.8',
     title: 'ツァイガルニク効果',
     subtitle:
-      '完了したことより未完了なことの方が記憶に残りやすい心理。ドラマの「続きは次回！」はこれを利用しています。',
+      '完了より未完了の方が記憶に残りやすい心理。ドラマの「続きは次回！」はこれを利用しています。',
   },
   {
     number: 'No.9',
     title: 'ピーク・エンドの法則',
     subtitle:
-      '体験の評価は「一番感情が動いた瞬間」と「終わり方」で決まる心理。終わりよければすべてよし。',
+      '体験の評価は「最も感情が動いた瞬間」と「終わり方」で決まります。終わりよければすべてよし。',
   },
   {
     number: 'No.10',
     title: 'フット・イン・ザ・ドア',
     subtitle:
-      '小さなお願いを先に聞いてもらうと、次に大きなお願いも通りやすくなる心理。段階的説得法とも呼ばれます。',
+      '小さなお願いを先に承諾してもらうと、次の大きなお願いも通りやすくなる段階的説得法です。',
   },
 ]
 
@@ -91,7 +91,6 @@ function easeOut(progress: number, start: number, end: number): number {
   return 1 - Math.pow(1 - t, 3)
 }
 
-// Character-level wrap (works for Japanese)
 function wrapText(
   ctx: CanvasRenderingContext2D,
   text: string,
@@ -127,14 +126,288 @@ function roundRect(
   ctx.beginPath()
   ctx.moveTo(x + r, y)
   ctx.lineTo(x + w - r, y)
-  ctx.arcTo(x + w, y, x + w, y + h, r)
+  ctx.arcTo(x + w, y, x + w, y + r, r)
   ctx.lineTo(x + w, y + h - r)
-  ctx.arcTo(x + w, y + h, x, y + h, r)
+  ctx.arcTo(x + w, y + h, x + w - r, y + h, r)
   ctx.lineTo(x + r, y + h)
-  ctx.arcTo(x, y + h, x, y, r)
+  ctx.arcTo(x, y + h, x, y + h - r, r)
   ctx.lineTo(x, y + r)
-  ctx.arcTo(x, y, x + w, y, r)
+  ctx.arcTo(x, y, x + r, y, r)
   ctx.closePath()
+}
+
+// Cute anime-style character
+function drawCharacter(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  r: number,
+  mouthOpen: number,
+  blinking: boolean,
+) {
+  // Body
+  const bodyGrad = ctx.createLinearGradient(cx - r * 0.6, cy + r, cx + r * 0.6, cy + r * 2.4)
+  bodyGrad.addColorStop(0, '#6d28d9')
+  bodyGrad.addColorStop(1, '#4c1d95')
+  ctx.fillStyle = bodyGrad
+  ctx.beginPath()
+  ctx.ellipse(cx, cy + r * 1.7, r * 0.68, r * 0.88, 0, 0, Math.PI * 2)
+  ctx.fill()
+
+  // Collar
+  ctx.fillStyle = '#ddd6fe'
+  ctx.beginPath()
+  ctx.ellipse(cx, cy + r * 0.95, r * 0.32, r * 0.2, 0, 0, Math.PI * 2)
+  ctx.fill()
+
+  // Head shadow
+  ctx.save()
+  ctx.globalAlpha = 0.15
+  ctx.fillStyle = '#000'
+  ctx.beginPath()
+  ctx.ellipse(cx + 5, cy + 5, r, r, 0, 0, Math.PI * 2)
+  ctx.fill()
+  ctx.restore()
+
+  // Head
+  const headGrad = ctx.createRadialGradient(cx - r * 0.2, cy - r * 0.25, r * 0.1, cx, cy, r)
+  headGrad.addColorStop(0, '#ffe0b2')
+  headGrad.addColorStop(1, '#ffcc80')
+  ctx.fillStyle = headGrad
+  ctx.beginPath()
+  ctx.arc(cx, cy, r, 0, Math.PI * 2)
+  ctx.fill()
+
+  // Hair base (covers top half of head)
+  ctx.fillStyle = '#4c1d95'
+  ctx.beginPath()
+  ctx.arc(cx, cy, r, Math.PI * 1.05, Math.PI * 1.95)
+  ctx.lineTo(cx, cy)
+  ctx.closePath()
+  ctx.fill()
+
+  // Hair tufts
+  const tufts: [number, number, number][] = [
+    [-0.55, -0.78, 0.3],
+    [-0.12, -0.98, 0.34],
+    [0.32, -0.9, 0.28],
+    [0.65, -0.68, 0.24],
+  ]
+  for (const [dx, dy, sz] of tufts) {
+    ctx.fillStyle = '#5b21b6'
+    ctx.beginPath()
+    ctx.arc(cx + dx * r, cy + dy * r, sz * r, 0, Math.PI * 2)
+    ctx.fill()
+  }
+
+  // Ear left
+  ctx.fillStyle = '#ffcc80'
+  ctx.beginPath()
+  ctx.ellipse(cx - r * 0.92, cy + r * 0.05, r * 0.22, r * 0.28, -0.3, 0, Math.PI * 2)
+  ctx.fill()
+  ctx.fillStyle = '#ffb74d'
+  ctx.beginPath()
+  ctx.ellipse(cx - r * 0.92, cy + r * 0.05, r * 0.13, r * 0.17, -0.3, 0, Math.PI * 2)
+  ctx.fill()
+
+  // Ear right
+  ctx.fillStyle = '#ffcc80'
+  ctx.beginPath()
+  ctx.ellipse(cx + r * 0.92, cy + r * 0.05, r * 0.22, r * 0.28, 0.3, 0, Math.PI * 2)
+  ctx.fill()
+  ctx.fillStyle = '#ffb74d'
+  ctx.beginPath()
+  ctx.ellipse(cx + r * 0.92, cy + r * 0.05, r * 0.13, r * 0.17, 0.3, 0, Math.PI * 2)
+  ctx.fill()
+
+  const eyeY = cy - r * 0.08
+  const eyeX = r * 0.32
+
+  if (blinking) {
+    // Closed eyes (happy curve)
+    ctx.strokeStyle = '#4a2800'
+    ctx.lineWidth = r * 0.09
+    ctx.lineCap = 'round'
+    ctx.beginPath()
+    ctx.arc(cx - eyeX, eyeY + r * 0.06, r * 0.16, Math.PI * 1.1, Math.PI * 1.9)
+    ctx.stroke()
+    ctx.beginPath()
+    ctx.arc(cx + eyeX, eyeY + r * 0.06, r * 0.16, Math.PI * 1.1, Math.PI * 1.9)
+    ctx.stroke()
+  } else {
+    // White of eyes
+    ctx.fillStyle = '#ffffff'
+    ctx.beginPath()
+    ctx.ellipse(cx - eyeX, eyeY, r * 0.21, r * 0.26, 0, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.beginPath()
+    ctx.ellipse(cx + eyeX, eyeY, r * 0.21, r * 0.26, 0, 0, Math.PI * 2)
+    ctx.fill()
+
+    // Iris
+    ctx.fillStyle = '#6d28d9'
+    ctx.beginPath()
+    ctx.ellipse(cx - eyeX + r * 0.02, eyeY + r * 0.02, r * 0.13, r * 0.17, 0, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.beginPath()
+    ctx.ellipse(cx + eyeX + r * 0.02, eyeY + r * 0.02, r * 0.13, r * 0.17, 0, 0, Math.PI * 2)
+    ctx.fill()
+
+    // Pupil
+    ctx.fillStyle = '#1a0a2e'
+    ctx.beginPath()
+    ctx.ellipse(cx - eyeX + r * 0.02, eyeY + r * 0.02, r * 0.07, r * 0.1, 0, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.beginPath()
+    ctx.ellipse(cx + eyeX + r * 0.02, eyeY + r * 0.02, r * 0.07, r * 0.1, 0, 0, Math.PI * 2)
+    ctx.fill()
+
+    // Shine dots
+    ctx.fillStyle = '#ffffff'
+    ctx.beginPath()
+    ctx.arc(cx - eyeX + r * 0.07, eyeY - r * 0.07, r * 0.055, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.beginPath()
+    ctx.arc(cx + eyeX + r * 0.07, eyeY - r * 0.07, r * 0.055, 0, Math.PI * 2)
+    ctx.fill()
+
+    // Eyelashes top
+    ctx.strokeStyle = '#4a2800'
+    ctx.lineWidth = r * 0.06
+    ctx.lineCap = 'round'
+    for (const [side, lx] of [[-1, cx - eyeX], [1, cx + eyeX]] as [number, number][]) {
+      ctx.beginPath()
+      ctx.moveTo(lx - r * 0.13, eyeY - r * 0.22)
+      ctx.lineTo(lx - r * 0.18 * side, eyeY - r * 0.3)
+      ctx.stroke()
+      ctx.beginPath()
+      ctx.moveTo(lx + r * 0.13, eyeY - r * 0.22)
+      ctx.lineTo(lx + r * 0.18 * side, eyeY - r * 0.3)
+      ctx.stroke()
+    }
+  }
+
+  // Eyebrows
+  ctx.strokeStyle = '#4a2800'
+  ctx.lineWidth = r * 0.07
+  ctx.lineCap = 'round'
+  ctx.beginPath()
+  ctx.moveTo(cx - eyeX - r * 0.17, eyeY - r * 0.36)
+  ctx.quadraticCurveTo(cx - eyeX, eyeY - r * 0.44, cx - eyeX + r * 0.17, eyeY - r * 0.36)
+  ctx.stroke()
+  ctx.beginPath()
+  ctx.moveTo(cx + eyeX - r * 0.17, eyeY - r * 0.36)
+  ctx.quadraticCurveTo(cx + eyeX, eyeY - r * 0.44, cx + eyeX + r * 0.17, eyeY - r * 0.36)
+  ctx.stroke()
+
+  // Blush
+  ctx.save()
+  ctx.globalAlpha = 0.38
+  ctx.fillStyle = '#ff7096'
+  ctx.beginPath()
+  ctx.ellipse(cx - eyeX * 1.75, eyeY + r * 0.35, r * 0.25, r * 0.13, -0.15, 0, Math.PI * 2)
+  ctx.fill()
+  ctx.beginPath()
+  ctx.ellipse(cx + eyeX * 1.75, eyeY + r * 0.35, r * 0.25, r * 0.13, 0.15, 0, Math.PI * 2)
+  ctx.fill()
+  ctx.restore()
+
+  // Mouth
+  const mouthY = cy + r * 0.45
+  const mouthW = r * 0.36
+
+  if (mouthOpen < 0.05) {
+    // Smile
+    ctx.strokeStyle = '#bf5050'
+    ctx.lineWidth = r * 0.07
+    ctx.lineCap = 'round'
+    ctx.beginPath()
+    ctx.arc(cx, mouthY + r * 0.05, mouthW * 0.75, 0.15, Math.PI - 0.15)
+    ctx.stroke()
+  } else {
+    const openH = mouthOpen * r * 0.34
+    // Outer mouth
+    ctx.fillStyle = '#bf2020'
+    ctx.beginPath()
+    ctx.ellipse(cx, mouthY, mouthW, openH, 0, 0, Math.PI * 2)
+    ctx.fill()
+    // Teeth
+    ctx.fillStyle = '#ffffff'
+    ctx.beginPath()
+    ctx.ellipse(cx, mouthY - openH * 0.15, mouthW * 0.75, openH * 0.45, 0, 0, Math.PI)
+    ctx.fill()
+    // Tongue
+    ctx.fillStyle = '#ff8080'
+    ctx.beginPath()
+    ctx.ellipse(cx, mouthY + openH * 0.2, mouthW * 0.45, openH * 0.38, 0, 0, Math.PI)
+    ctx.fill()
+  }
+
+  // Nose (tiny dots)
+  ctx.fillStyle = '#cc8844'
+  ctx.beginPath()
+  ctx.arc(cx - r * 0.07, cy + r * 0.22, r * 0.035, 0, Math.PI * 2)
+  ctx.fill()
+  ctx.beginPath()
+  ctx.arc(cx + r * 0.07, cy + r * 0.22, r * 0.035, 0, Math.PI * 2)
+  ctx.fill()
+}
+
+function setupAmbientAudio(
+  audioCtx: AudioContext,
+  dest: MediaStreamAudioDestinationNode,
+  duration: number,
+  talkStartRatio: number,
+  talkEndRatio: number,
+) {
+  const now = audioCtx.currentTime
+
+  // Ambient A-minor pad (very quiet)
+  const ambientFreqs = [110, 130.81, 164.81, 220, 261.63]
+  for (const freq of ambientFreqs) {
+    const osc = audioCtx.createOscillator()
+    const gain = audioCtx.createGain()
+    osc.type = 'sine'
+    osc.frequency.value = freq
+    gain.gain.setValueAtTime(0, now)
+    gain.gain.linearRampToValueAtTime(0.018, now + 1.5)
+    gain.gain.linearRampToValueAtTime(0.018, now + duration - 1.5)
+    gain.gain.linearRampToValueAtTime(0, now + duration)
+    osc.connect(gain)
+    gain.connect(dest)
+    osc.start(now)
+    osc.stop(now + duration + 0.1)
+  }
+
+  // Talking voice-like sound (band-pass filtered noise pattern)
+  const talkStart = duration * talkStartRatio
+  const talkEnd = duration * talkEndRatio
+  const talkDuration = talkEnd - talkStart
+
+  const voiceFreqs = [180, 260, 320, 430]
+  for (const freq of voiceFreqs) {
+    const osc = audioCtx.createOscillator()
+    const gain = audioCtx.createGain()
+    osc.type = 'triangle'
+    osc.frequency.value = freq + Math.random() * 20
+
+    gain.gain.setValueAtTime(0, now)
+
+    // Schedule rapid on-off bursts (simulates syllables)
+    const syllableRate = 4.5
+    const syllableCount = Math.floor(talkDuration * syllableRate)
+    for (let i = 0; i < syllableCount; i++) {
+      const t = now + talkStart + (i / syllableRate)
+      const vol = 0.022 + Math.random() * 0.015
+      gain.gain.setValueAtTime(vol, t)
+      gain.gain.setValueAtTime(0, t + 0.08 + Math.random() * 0.04)
+    }
+
+    osc.connect(gain)
+    gain.connect(dest)
+    osc.start(now)
+    osc.stop(now + duration + 0.1)
+  }
 }
 
 export function TikTokCreator() {
@@ -146,63 +419,60 @@ export function TikTokCreator() {
     bgColor1: '#ff0050',
     bgColor2: '#00f2ea',
     textColor: '#ffffff',
-    duration: 10,
+    duration: 12,
     template: 'psych',
   })
   const [psychNum, setPsychNum] = useState('No.1')
+  const [showCharacter, setShowCharacter] = useState(true)
   const [isRecording, setIsRecording] = useState(false)
   const [progress, setProgress] = useState(0)
   const [downloaded, setDownloaded] = useState(false)
+  const [isSpeaking, setIsSpeaking] = useState(false)
 
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const rafRef = useRef<number>(0)
   const previewStartRef = useRef<number | null>(null)
 
   const drawPsychFrame = useCallback(
-    (ctx: CanvasRenderingContext2D, t: number, num: string) => {
+    (ctx: CanvasRenderingContext2D, t: number, num: string, withCharacter: boolean) => {
       const w = CANVAS_W
       const h = CANVAS_H
       const dur = config.duration
       const norm = t / dur
 
-      // ── Background: deep dark indigo ──
+      // Background
       const bg = ctx.createLinearGradient(0, 0, w, h)
       bg.addColorStop(0, '#08081e')
       bg.addColorStop(1, '#1a0535')
       ctx.fillStyle = bg
       ctx.fillRect(0, 0, w, h)
 
-      // Pulsing glow in center
-      const pulseR = 0.5 + Math.sin(t * 1.8) * 0.08
-      const glow = ctx.createRadialGradient(w / 2, h * 0.45, 0, w / 2, h * 0.45, h * pulseR)
-      glow.addColorStop(0, 'rgba(120, 60, 255, 0.18)')
-      glow.addColorStop(0.5, 'rgba(60, 20, 180, 0.08)')
+      // Pulsing glow
+      const pulseR = 0.48 + Math.sin(t * 1.8) * 0.07
+      const glow = ctx.createRadialGradient(w / 2, h * 0.42, 0, w / 2, h * 0.42, h * pulseR)
+      glow.addColorStop(0, 'rgba(120,60,255,0.2)')
+      glow.addColorStop(0.6, 'rgba(60,20,180,0.07)')
       glow.addColorStop(1, 'transparent')
       ctx.fillStyle = glow
       ctx.fillRect(0, 0, w, h)
 
-      // Animated neural-network dots
-      ctx.globalAlpha = 0.25
-      const nodes = [
-        [0.15, 0.2],
-        [0.85, 0.15],
-        [0.1, 0.55],
-        [0.9, 0.5],
-        [0.2, 0.8],
-        [0.8, 0.75],
-        [0.5, 0.12],
-        [0.5, 0.88],
+      // Neural-network nodes
+      ctx.save()
+      ctx.globalAlpha = 0.22
+      const nodes: [number, number][] = [
+        [0.12, 0.18], [0.88, 0.14], [0.08, 0.52], [0.92, 0.48],
+        [0.18, 0.82], [0.82, 0.78], [0.5, 0.1], [0.5, 0.9],
+        [0.3, 0.35], [0.72, 0.38],
       ]
       for (const [nx, ny] of nodes) {
-        const px = nx * w + Math.sin(t * 0.4 + nx * 5) * 12
-        const py = ny * h + Math.cos(t * 0.3 + ny * 5) * 12
-        // Connecting lines
+        const px = nx * w + Math.sin(t * 0.38 + nx * 5) * 10
+        const py = ny * h + Math.cos(t * 0.28 + ny * 5) * 10
         for (const [nx2, ny2] of nodes) {
-          const px2 = nx2 * w + Math.sin(t * 0.4 + nx2 * 5) * 12
-          const py2 = ny2 * h + Math.cos(t * 0.3 + ny2 * 5) * 12
+          const px2 = nx2 * w + Math.sin(t * 0.38 + nx2 * 5) * 10
+          const py2 = ny2 * h + Math.cos(t * 0.28 + ny2 * 5) * 10
           const dist = Math.hypot(px2 - px, py2 - py)
-          if (dist < 280) {
-            ctx.strokeStyle = `rgba(160, 100, 255, ${(1 - dist / 280) * 0.4})`
+          if (dist < 260 && dist > 0) {
+            ctx.strokeStyle = `rgba(160,100,255,${(1 - dist / 260) * 0.35})`
             ctx.lineWidth = 1
             ctx.beginPath()
             ctx.moveTo(px, py)
@@ -210,124 +480,169 @@ export function TikTokCreator() {
             ctx.stroke()
           }
         }
-        ctx.fillStyle = 'rgba(180, 130, 255, 0.8)'
+        ctx.fillStyle = 'rgba(190,140,255,0.9)'
         ctx.beginPath()
         ctx.arc(px, py, 3, 0, Math.PI * 2)
         ctx.fill()
       }
-      ctx.globalAlpha = 1
+      ctx.restore()
 
-      // ── Top bar ──
-      ctx.fillStyle = 'rgba(0,0,0,0.4)'
-      ctx.fillRect(0, 0, w, 72)
-      ctx.fillStyle = 'rgba(255,255,255,0.7)'
+      // Top bar
+      ctx.fillStyle = 'rgba(0,0,0,0.38)'
+      ctx.fillRect(0, 0, w, 70)
+      ctx.fillStyle = 'rgba(255,255,255,0.65)'
       ctx.font = '22px sans-serif'
       ctx.textAlign = 'center'
-      ctx.fillText('おすすめ', w / 2, 44)
+      ctx.fillText('おすすめ', w / 2, 43)
 
-      // ── Brain badge ──
-      const badgeP = easeOut(norm, 0.0, 0.2)
+      // Brain badge
+      const badgeP = easeOut(norm, 0.0, 0.18)
+      ctx.save()
       ctx.globalAlpha = badgeP
-      const badgeW = 280
-      const badgeH = 52
-      const badgeX = (w - badgeW) / 2
-      const badgeY = 96
-      roundRect(ctx, badgeX, badgeY, badgeW, badgeH, 26)
-      const badgeBg = ctx.createLinearGradient(badgeX, badgeY, badgeX + badgeW, badgeY)
-      badgeBg.addColorStop(0, '#7b3fff')
+      const bw = 290, bh = 52, bx = (w - bw) / 2, by = 92
+      roundRect(ctx, bx, by, bw, bh, 26)
+      const badgeBg = ctx.createLinearGradient(bx, by, bx + bw, by)
+      badgeBg.addColorStop(0, '#7c3aed')
       badgeBg.addColorStop(1, '#3b82f6')
       ctx.fillStyle = badgeBg
       ctx.fill()
-      ctx.fillStyle = '#ffffff'
+      ctx.fillStyle = '#fff'
       ctx.font = 'bold 22px sans-serif'
       ctx.textAlign = 'center'
-      ctx.fillText('🧠 心理学豆知識', w / 2, badgeY + 34)
-      ctx.globalAlpha = 1
+      ctx.fillText('🧠  心理学豆知識', w / 2, by + 34)
+      ctx.restore()
 
-      // ── Number ──
-      const numP = easeOut(norm, 0.1, 0.3)
-      ctx.globalAlpha = numP * 0.6
+      // Number
+      ctx.save()
+      ctx.globalAlpha = easeOut(norm, 0.08, 0.28) * 0.6
       ctx.fillStyle = '#a78bff'
-      ctx.font = 'bold 32px sans-serif'
+      ctx.font = 'bold 30px sans-serif'
       ctx.textAlign = 'center'
-      ctx.fillText(num, w / 2, 196)
-      ctx.globalAlpha = 1
+      ctx.fillText(num, w / 2, 192)
+      ctx.restore()
 
-      // ── Divider line ──
-      const lineP = easeOut(norm, 0.12, 0.32)
-      ctx.globalAlpha = lineP * 0.5
-      const lineW = lineP * 200
-      const lineGrad = ctx.createLinearGradient(w / 2 - lineW, 0, w / 2 + lineW, 0)
-      lineGrad.addColorStop(0, 'transparent')
-      lineGrad.addColorStop(0.5, '#a78bff')
-      lineGrad.addColorStop(1, 'transparent')
-      ctx.strokeStyle = lineGrad
+      // Divider
+      const lineP = easeOut(norm, 0.1, 0.3)
+      ctx.save()
+      ctx.globalAlpha = lineP * 0.45
+      const lw = lineP * 190
+      const lg = ctx.createLinearGradient(w / 2 - lw, 0, w / 2 + lw, 0)
+      lg.addColorStop(0, 'transparent')
+      lg.addColorStop(0.5, '#a78bff')
+      lg.addColorStop(1, 'transparent')
+      ctx.strokeStyle = lg
       ctx.lineWidth = 1.5
       ctx.beginPath()
-      ctx.moveTo(w / 2 - lineW, 214)
-      ctx.lineTo(w / 2 + lineW, 214)
+      ctx.moveTo(w / 2 - lw, 210)
+      ctx.lineTo(w / 2 + lw, 210)
       ctx.stroke()
-      ctx.globalAlpha = 1
+      ctx.restore()
 
-      // ── Title (principle name) ──
-      const tp = easeOut(norm, 0.15, 0.45)
+      // Title (principle name)
+      const tp = easeOut(norm, 0.13, 0.42)
+      ctx.save()
       ctx.globalAlpha = tp
-      ctx.shadowColor = 'rgba(160, 100, 255, 0.8)'
-      ctx.shadowBlur = 24
+      ctx.shadowColor = 'rgba(160,100,255,0.9)'
+      ctx.shadowBlur = 22
       ctx.fillStyle = '#ffffff'
-      ctx.font = `bold 68px sans-serif`
+      ctx.font = `bold 64px sans-serif`
       ctx.textAlign = 'center'
-      wrapText(ctx, config.title, w / 2, h * 0.36 - (1 - tp) * 36, w - 80, 82)
-      ctx.shadowBlur = 0
-      ctx.globalAlpha = 1
+      wrapText(ctx, config.title, w / 2, h * 0.345 - (1 - tp) * 32, w - 80, 78)
+      ctx.restore()
 
-      // ── Subtitle card ──
-      const sp = easeOut(norm, 0.45, 0.72)
+      // Subtitle card
+      const sp = easeOut(norm, 0.42, 0.7)
+      ctx.save()
       ctx.globalAlpha = sp
-      const cardH = 220
-      const cardY = h * 0.55
-      roundRect(ctx, 36, cardY, w - 72, cardH, 20)
+      const cardY = h * 0.535, cardH = 205
+      roundRect(ctx, 38, cardY, w - 76, cardH, 20)
       ctx.fillStyle = 'rgba(255,255,255,0.07)'
       ctx.fill()
-      roundRect(ctx, 36, cardY, w - 72, cardH, 20)
-      ctx.strokeStyle = 'rgba(160,100,255,0.3)'
+      roundRect(ctx, 38, cardY, w - 76, cardH, 20)
+      ctx.strokeStyle = 'rgba(160,100,255,0.28)'
       ctx.lineWidth = 1
       ctx.stroke()
-      ctx.fillStyle = 'rgba(220, 200, 255, 0.9)'
-      ctx.font = `28px sans-serif`
+      ctx.fillStyle = 'rgba(225,210,255,0.9)'
+      ctx.font = `27px sans-serif`
       ctx.textAlign = 'center'
-      wrapText(ctx, config.subtitle, w / 2, cardY + 46, w - 120, 40)
-      ctx.globalAlpha = 1
+      wrapText(ctx, config.subtitle, w / 2, cardY + 42, w - 118, 38)
+      ctx.restore()
 
-      // ── Right-side TikTok buttons ──
-      const bp = easeOut(norm, 0.35, 0.6)
+      // Character (bottom center)
+      if (withCharacter) {
+        const charP = easeOut(norm, 0.35, 0.55)
+        const charScale = charP
+        const cx = w / 2
+        const cy = h * 0.81
+        const r = 58
+
+        const isTalking = sp > 0.08 && sp < 0.96
+        const mouthOpen = isTalking ? Math.abs(Math.sin(t * 14.5)) * 0.72 : 0
+        const blinking = Math.sin(t * 2.2 + 1.3) > 0.96
+
+        ctx.save()
+        ctx.globalAlpha = charP
+        ctx.translate(cx, cy)
+        ctx.scale(charScale, charScale)
+        ctx.translate(-cx, -cy)
+        drawCharacter(ctx, cx, cy, r, mouthOpen, blinking)
+
+        // Speech bubble (while talking)
+        if (isTalking && sp > 0.15) {
+          const bubbleAlpha = Math.min(1, (sp - 0.15) / 0.2) * (1 - Math.max(0, (sp - 0.85) / 0.15))
+          ctx.globalAlpha = charP * bubbleAlpha
+          const bx = cx + r * 1.2
+          const bubby = cy - r * 0.6
+          const bw2 = 140, bh2 = 48
+          roundRect(ctx, bx, bubby - bh2 / 2, bw2, bh2, 14)
+          ctx.fillStyle = 'rgba(255,255,255,0.92)'
+          ctx.fill()
+          // Tail
+          ctx.beginPath()
+          ctx.moveTo(bx, bubby)
+          ctx.lineTo(bx - 14, bubby + 10)
+          ctx.lineTo(bx - 14, bubby - 10)
+          ctx.closePath()
+          ctx.fill()
+          ctx.fillStyle = '#5b21b6'
+          ctx.font = 'bold 22px sans-serif'
+          ctx.textAlign = 'center'
+          ctx.fillText('なるほど！', bx + bw2 / 2, bubby + 8)
+        }
+        ctx.restore()
+      }
+
+      // TikTok action buttons
+      const bp = easeOut(norm, 0.32, 0.58)
+      ctx.save()
       ctx.globalAlpha = bp * 0.85
-      const bx = w - 44
+      const bx2 = w - 44
       const btns: [string, string, number][] = [
-        ['♥', '9.4k', 0.52],
-        ['💬', '312', 0.63],
-        ['↗', 'シェア', 0.74],
+        ['♥', '9.4k', 0.5],
+        ['💬', '312', 0.61],
+        ['↗', 'シェア', 0.72],
       ]
       for (const [icon, label, fy] of btns) {
-        ctx.font = '38px sans-serif'
+        ctx.font = '36px sans-serif'
         ctx.fillStyle = '#ffffff'
         ctx.textAlign = 'center'
-        ctx.fillText(icon, bx, h * fy)
-        ctx.font = 'bold 17px sans-serif'
-        ctx.fillText(label, bx, h * fy + 26)
+        ctx.fillText(icon, bx2, h * fy)
+        ctx.font = 'bold 16px sans-serif'
+        ctx.fillText(label, bx2, h * fy + 24)
       }
-      ctx.globalAlpha = 1
+      ctx.restore()
 
-      // ── Hashtag bar ──
-      const hp = easeOut(norm, 0.75, 0.93)
+      // Hashtag bar
+      const hp = easeOut(norm, 0.76, 0.94)
+      ctx.save()
       ctx.globalAlpha = hp
       ctx.fillStyle = 'rgba(0,0,0,0.5)'
-      ctx.fillRect(0, h - 116, w, 116)
+      ctx.fillRect(0, h - 110, w, 110)
       ctx.fillStyle = '#c4b5fd'
-      ctx.font = 'bold 24px sans-serif'
+      ctx.font = 'bold 23px sans-serif'
       ctx.textAlign = 'center'
-      ctx.fillText(config.hashtags, w / 2, h - 44)
-      ctx.globalAlpha = 1
+      ctx.fillText(config.hashtags, w / 2, h - 40)
+      ctx.restore()
     },
     [config],
   )
@@ -336,8 +651,7 @@ export function TikTokCreator() {
     (ctx: CanvasRenderingContext2D, t: number) => {
       const w = CANVAS_W
       const h = CANVAS_H
-      const dur = config.duration
-      const norm = t / dur
+      const norm = t / config.duration
 
       if (config.template === 'dark') {
         ctx.fillStyle = '#0a0a0a'
@@ -361,6 +675,7 @@ export function TikTokCreator() {
       }
 
       if (config.template !== 'minimal') {
+        ctx.save()
         ctx.globalAlpha = 0.1
         for (let i = 0; i < 5; i++) {
           const px = (Math.sin(t * 0.35 + i * 1.3) * 0.4 + 0.5) * w
@@ -374,7 +689,7 @@ export function TikTokCreator() {
           ctx.arc(px, py, pr, 0, Math.PI * 2)
           ctx.fill()
         }
-        ctx.globalAlpha = 1
+        ctx.restore()
       }
 
       ctx.fillStyle = 'rgba(0,0,0,0.3)'
@@ -385,45 +700,40 @@ export function TikTokCreator() {
       ctx.fillText('おすすめ', w / 2, 46)
 
       const tp = easeOut(norm, 0.1, 0.4)
-      const titleColor = config.template === 'minimal' ? '#111111' : config.textColor
+      ctx.save()
       ctx.globalAlpha = tp
       ctx.shadowColor = config.template === 'minimal' ? 'transparent' : 'rgba(0,0,0,0.5)'
       ctx.shadowBlur = 10
-      ctx.fillStyle = titleColor
+      ctx.fillStyle = config.template === 'minimal' ? '#111' : config.textColor
       ctx.font = `bold 56px sans-serif`
       ctx.textAlign = 'center'
       wrapText(ctx, config.title, w / 2, h * 0.38 - (1 - tp) * 40, w - 80, 68)
-      ctx.shadowBlur = 0
-      ctx.globalAlpha = 1
+      ctx.restore()
 
       const sp = easeOut(norm, 0.42, 0.68)
-      const subColor = config.template === 'minimal' ? '#444444' : `${config.textColor}cc`
+      ctx.save()
       ctx.globalAlpha = sp
-      ctx.fillStyle = subColor
+      ctx.fillStyle = config.template === 'minimal' ? '#444' : `${config.textColor}cc`
       ctx.font = `30px sans-serif`
       ctx.textAlign = 'center'
       wrapText(ctx, config.subtitle, w / 2, h * 0.56, w - 100, 40)
-      ctx.globalAlpha = 1
+      ctx.restore()
 
       const bp = easeOut(norm, 0.3, 0.6)
+      ctx.save()
       ctx.globalAlpha = bp * 0.9
-      const bx = w - 42
-      const items: [string, string, number][] = [
-        ['♥', '12.3k', 0.52],
-        ['💬', '423', 0.63],
-        ['↗', 'シェア', 0.74],
-      ]
-      for (const [icon, label, fy] of items) {
+      for (const [icon, label, fy] of [['♥', '12.3k', 0.52], ['💬', '423', 0.63], ['↗', 'シェア', 0.74]] as [string, string, number][]) {
         ctx.font = '38px sans-serif'
         ctx.fillStyle = '#ffffff'
         ctx.textAlign = 'center'
-        ctx.fillText(icon, bx, h * fy)
+        ctx.fillText(icon, w - 42, h * fy)
         ctx.font = 'bold 18px sans-serif'
-        ctx.fillText(label, bx, h * fy + 28)
+        ctx.fillText(label, w - 42, h * fy + 28)
       }
-      ctx.globalAlpha = 1
+      ctx.restore()
 
       const hp = easeOut(norm, 0.72, 0.92)
+      ctx.save()
       ctx.globalAlpha = hp
       ctx.fillStyle = 'rgba(0,0,0,0.45)'
       ctx.fillRect(0, h - 120, w, 120)
@@ -431,7 +741,7 @@ export function TikTokCreator() {
       ctx.font = 'bold 26px sans-serif'
       ctx.textAlign = 'center'
       ctx.fillText(config.hashtags, w / 2, h - 48)
-      ctx.globalAlpha = 1
+      ctx.restore()
     },
     [config],
   )
@@ -439,12 +749,12 @@ export function TikTokCreator() {
   const drawFrame = useCallback(
     (ctx: CanvasRenderingContext2D, t: number) => {
       if (config.template === 'psych') {
-        drawPsychFrame(ctx, t, psychNum)
+        drawPsychFrame(ctx, t, psychNum, showCharacter)
       } else {
         drawGeneralFrame(ctx, t)
       }
     },
-    [config.template, drawPsychFrame, drawGeneralFrame, psychNum],
+    [config.template, drawPsychFrame, drawGeneralFrame, psychNum, showCharacter],
   )
 
   useEffect(() => {
@@ -464,27 +774,64 @@ export function TikTokCreator() {
     return () => cancelAnimationFrame(rafRef.current)
   }, [isRecording, drawFrame, config.duration])
 
+  const handleVoicePreview = () => {
+    if (!('speechSynthesis' in window)) return
+    speechSynthesis.cancel()
+    const utterance = new SpeechSynthesisUtterance(
+      `${config.title}。${config.subtitle}`,
+    )
+    utterance.lang = 'ja-JP'
+    utterance.rate = 0.88
+    utterance.pitch = 1.1
+    setIsSpeaking(true)
+    utterance.onend = () => setIsSpeaking(false)
+    utterance.onerror = () => setIsSpeaking(false)
+    speechSynthesis.speak(utterance)
+  }
+
+  const stopVoice = () => {
+    speechSynthesis.cancel()
+    setIsSpeaking(false)
+  }
+
   const startRecording = () => {
     const canvas = canvasRef.current
     if (!canvas || isRecording) return
 
     cancelAnimationFrame(rafRef.current)
+    speechSynthesis.cancel()
+    setIsSpeaking(false)
     setIsRecording(true)
     setProgress(0)
     setDownloaded(false)
 
     const ctx = canvas.getContext('2d')!
-    const stream = canvas.captureStream(FPS)
-    const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
-      ? 'video/webm;codecs=vp9'
-      : 'video/webm'
-    const recorder = new MediaRecorder(stream, { mimeType })
+
+    // Setup audio (ambient + talking sounds)
+    const audioCtx = new AudioContext()
+    const audioDest = audioCtx.createMediaStreamDestination()
+    setupAmbientAudio(audioCtx, audioDest, config.duration, 0.42, 0.78)
+
+    const videoStream = canvas.captureStream(FPS)
+    const combinedStream = new MediaStream([
+      ...videoStream.getVideoTracks(),
+      ...audioDest.stream.getAudioTracks(),
+    ])
+
+    const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')
+      ? 'video/webm;codecs=vp9,opus'
+      : MediaRecorder.isTypeSupported('video/webm;codecs=vp8,opus')
+        ? 'video/webm;codecs=vp8,opus'
+        : 'video/webm'
+
+    const recorder = new MediaRecorder(combinedStream, { mimeType })
     const chunks: Blob[] = []
 
     recorder.ondataavailable = (e) => {
       if (e.data.size > 0) chunks.push(e.data)
     }
     recorder.onstop = () => {
+      audioCtx.close()
       const blob = new Blob(chunks, { type: 'video/webm' })
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
@@ -533,7 +880,6 @@ export function TikTokCreator() {
   return (
     <div className="tiktok-creator">
       <div className="creator-layout">
-        {/* Settings Panel */}
         <div className="creator-form">
           <h2 className="form-title">動画設定</h2>
 
@@ -546,34 +892,48 @@ export function TikTokCreator() {
                   className={`template-btn${config.template === t ? ' active' : ''}`}
                   onClick={() => update('template', t)}
                 >
-                  {t === 'psych'
-                    ? '🧠 心理学'
-                    : t === 'gradient'
-                      ? 'グラデーション'
-                      : t === 'dark'
-                        ? 'ダーク'
-                        : 'ミニマル'}
+                  {t === 'psych' ? '🧠 心理学' : t === 'gradient' ? 'グラデ' : t === 'dark' ? 'ダーク' : 'ミニマル'}
                 </button>
               ))}
             </div>
           </div>
 
           {isPsych && (
-            <div className="form-group">
-              <label>心理学プリセット（クリックで即反映）</label>
-              <div className="preset-grid">
-                {PSYCH_FACTS.map((fact) => (
-                  <button
-                    key={fact.number}
-                    className={`preset-btn${config.title === fact.title ? ' active' : ''}`}
-                    onClick={() => applyPreset(fact)}
-                  >
-                    <span className="preset-num">{fact.number}</span>
-                    <span className="preset-name">{fact.title}</span>
-                  </button>
-                ))}
+            <>
+              <div className="form-group">
+                <label>心理学プリセット（クリックで即反映）</label>
+                <div className="preset-grid">
+                  {PSYCH_FACTS.map((fact) => (
+                    <button
+                      key={fact.number}
+                      className={`preset-btn${config.title === fact.title ? ' active' : ''}`}
+                      onClick={() => applyPreset(fact)}
+                    >
+                      <span className="preset-num">{fact.number}</span>
+                      <span className="preset-name">{fact.title}</span>
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
+
+              <div className="form-group">
+                <label>キャラクター</label>
+                <div className="template-buttons">
+                  <button
+                    className={`template-btn${showCharacter ? ' active' : ''}`}
+                    onClick={() => setShowCharacter(true)}
+                  >
+                    表示する
+                  </button>
+                  <button
+                    className={`template-btn${!showCharacter ? ' active' : ''}`}
+                    onClick={() => setShowCharacter(false)}
+                  >
+                    非表示
+                  </button>
+                </div>
+              </div>
+            </>
           )}
 
           <div className="form-group">
@@ -610,27 +970,15 @@ export function TikTokCreator() {
             <div className="form-row">
               <div className="form-group">
                 <label>カラー1</label>
-                <input
-                  type="color"
-                  value={config.bgColor1}
-                  onChange={(e) => update('bgColor1', e.target.value)}
-                />
+                <input type="color" value={config.bgColor1} onChange={(e) => update('bgColor1', e.target.value)} />
               </div>
               <div className="form-group">
                 <label>カラー2</label>
-                <input
-                  type="color"
-                  value={config.bgColor2}
-                  onChange={(e) => update('bgColor2', e.target.value)}
-                />
+                <input type="color" value={config.bgColor2} onChange={(e) => update('bgColor2', e.target.value)} />
               </div>
               <div className="form-group">
                 <label>文字色</label>
-                <input
-                  type="color"
-                  value={config.textColor}
-                  onChange={(e) => update('textColor', e.target.value)}
-                />
+                <input type="color" value={config.textColor} onChange={(e) => update('textColor', e.target.value)} />
               </div>
             </div>
           )}
@@ -638,13 +986,19 @@ export function TikTokCreator() {
           <div className="form-group">
             <label>動画の長さ: {config.duration}秒</label>
             <input
-              type="range"
-              min={5}
-              max={30}
-              value={config.duration}
+              type="range" min={8} max={30} value={config.duration}
               onChange={(e) => update('duration', Number(e.target.value))}
             />
           </div>
+
+          {/* Voice preview button */}
+          <button
+            className={`voice-btn${isSpeaking ? ' speaking' : ''}`}
+            onClick={isSpeaking ? stopVoice : handleVoicePreview}
+            disabled={isRecording}
+          >
+            {isSpeaking ? '■  しゃべりを止める' : '▶  声でプレビュー（日本語TTS）'}
+          </button>
 
           <button
             className={`record-btn${isRecording ? ' recording' : ''}`}
@@ -669,15 +1023,14 @@ export function TikTokCreator() {
           <div className="upload-guide">
             <h3>アップロード手順</h3>
             <ol>
-              <li>上のボタンで動画(.webm)をダウンロード</li>
-              <li>TikTokアプリを開く</li>
-              <li>「+」ボタン → 「アップロード」を選択</li>
+              <li>「声でプレビュー」でキャラクターが喋るか確認</li>
+              <li>「動画を生成」で .webm をダウンロード</li>
+              <li>TikTokアプリ → 「+」→「アップロード」</li>
               <li>ダウンロードした動画を選んで投稿</li>
             </ol>
           </div>
         </div>
 
-        {/* Preview Panel */}
         <div className="creator-preview">
           <p className="preview-label">プレビュー（リアルタイム）</p>
           <div className="canvas-wrapper">
