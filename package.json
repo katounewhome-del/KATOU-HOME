@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:single": "tsc -b && SINGLE_FILE=true vite build --outDir dist-single",
     "generate:api": "openapi-typescript openapi/pokeapi.yaml -o src/api/pokeapi.ts",
     "lint": "eslint .",
     "preview": "vite preview"
@@ -28,6 +29,7 @@
     "openapi-typescript": "^7.13.0",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.58.2",
-    "vite": "^8.0.10"
+    "vite": "^8.0.10",
+    "vite-plugin-singlefile": "^2.3.3"
   }
 }
