@@ -6,11 +6,13 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:single": "tsc -b && SINGLE_FILE=true vite build --outDir dist-single",
     "generate:api": "openapi-typescript openapi/pokeapi.yaml -o src/api/pokeapi.ts",
     "lint": "eslint .",
     "preview": "vite preview"
   },
   "dependencies": {
+    "mp4-muxer": "^5.2.2",
     "react": "^19.2.5",
     "react-dom": "^19.2.5"
   },
@@ -25,8 +27,10 @@
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.5.0",
     "openapi-typescript": "^7.13.0",
+    "playwright": "^1.59.1",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.58.2",
-    "vite": "^8.0.10"
+    "vite": "^8.0.10",
+    "vite-plugin-singlefile": "^2.3.3"
   }
 }

@@ -199,3 +199,682 @@ dd {
     flex-direction: column;
   }
 }
+
+/* ─── Tab Navigation ─────────────────────────────── */
+.page-tabs {
+  display: flex;
+  gap: 0;
+  padding: 24px 56px 0;
+  border-bottom: 2px solid var(--border);
+  background: rgba(255, 255, 255, 0.6);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.page-tab {
+  background: transparent;
+  border-radius: 0;
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 700;
+  min-width: auto;
+  opacity: 0.55;
+  padding: 14px 28px;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  transition: opacity 0.15s, border-color 0.15s;
+}
+
+.page-tab:hover {
+  opacity: 0.85;
+}
+
+.page-tab.active {
+  color: var(--text-h);
+  opacity: 1;
+  border-bottom-color: var(--accent);
+}
+
+@media (max-width: 860px) {
+  .page-tabs {
+    padding: 16px 18px 0;
+  }
+  .page-tab {
+    padding: 12px 18px;
+    font-size: 14px;
+  }
+}
+
+/* ─── TikTok Creator ─────────────────────────────── */
+.tiktok-creator {
+  padding: 40px 56px;
+}
+
+.creator-layout {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 40px;
+  align-items: start;
+}
+
+.creator-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-title {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text-h);
+  margin: 0 0 4px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.form-group textarea {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  font: inherit;
+  font-size: 15px;
+  padding: 12px 14px;
+  resize: vertical;
+  color: var(--text-h);
+  background: #fff;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.form-group textarea:focus {
+  border-color: var(--accent);
+}
+
+.form-group input[type='text'] {
+  border-radius: 14px;
+  outline: 1px solid var(--border);
+  padding: 12px 14px;
+  font-size: 15px;
+}
+
+.form-group input[type='color'] {
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  height: 48px;
+  padding: 4px;
+  width: 100%;
+}
+
+.form-group input[type='range'] {
+  border-radius: 0;
+  outline: none;
+  padding: 0;
+  accent-color: var(--accent);
+  width: 100%;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.template-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.template-btn {
+  background: #f0ede5;
+  border-radius: 12px;
+  color: var(--text-h);
+  font-size: 13px;
+  font-weight: 700;
+  min-width: auto;
+  padding: 10px 16px;
+  transition: background 0.15s;
+}
+
+.template-btn.active {
+  background: var(--accent);
+  color: #fff;
+}
+
+/* ─── Psychology presets ─────────────────────────── */
+.preset-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.preset-btn {
+  align-items: flex-start;
+  background: #f4f0ff;
+  border-radius: 14px;
+  color: var(--text-h);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: auto;
+  padding: 12px 14px;
+  text-align: left;
+  transition: background 0.12s;
+}
+
+.preset-btn:hover {
+  background: #ede5ff;
+}
+
+.preset-btn.active {
+  background: #7c3aed;
+  color: #fff;
+}
+
+.preset-num {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  opacity: 0.6;
+}
+
+.preset-btn.active .preset-num {
+  opacity: 0.8;
+}
+
+.preset-name {
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.3;
+}
+
+.voice-btn {
+  background: #5b21b6;
+  border-radius: 18px;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 14px 24px;
+  transition: opacity 0.15s;
+}
+
+.voice-btn:hover:not(:disabled) {
+  opacity: 0.85;
+}
+
+.voice-btn.speaking {
+  background: #7c3aed;
+  animation: pulse-voice 1s ease-in-out infinite;
+}
+
+@keyframes pulse-voice {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.record-btn {
+  background: #ff0050;
+  border-radius: 18px;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 800;
+  padding: 18px 24px;
+  transition: opacity 0.15s, transform 0.1s;
+  letter-spacing: 0.02em;
+}
+
+.record-btn:not(:disabled):hover {
+  opacity: 0.88;
+  transform: translateY(-1px);
+}
+
+.record-btn.recording {
+  background: #999;
+}
+
+.progress-bar {
+  background: #e8e4d8;
+  border-radius: 999px;
+  height: 8px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  background: #ff0050;
+  border-radius: 999px;
+  height: 100%;
+  transition: width 0.1s linear;
+}
+
+.success-msg {
+  background: #edfbea;
+  border: 1px solid #a8dfa0;
+  border-radius: 14px;
+  color: #1a6b12;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 14px 18px;
+}
+
+.upload-guide {
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 24px;
+}
+
+.upload-guide h3 {
+  color: var(--text-h);
+  font-size: 15px;
+  font-weight: 800;
+  margin: 0 0 14px;
+}
+
+.upload-guide ol {
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.8;
+  margin: 0;
+  padding-left: 20px;
+}
+
+.creator-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  position: sticky;
+  top: 80px;
+}
+
+.preview-label {
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.canvas-wrapper {
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
+  width: 270px;
+  height: 480px;
+}
+
+.canvas-wrapper.hidden {
+  display: none;
+}
+
+/* ─── Background presets ─────────────────────────── */
+.bg-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.bg-preset-btn {
+  background: var(--bg-color, #111);
+  border: 2px solid transparent;
+  border-radius: 12px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  min-width: auto;
+  padding: 8px 14px;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+  transition: border-color 0.12s, transform 0.1s;
+}
+
+.bg-preset-btn:hover {
+  transform: translateY(-1px);
+}
+
+.bg-preset-btn.active {
+  border-color: #a78bff;
+  box-shadow: 0 0 0 3px rgba(167, 139, 255, 0.25);
+}
+
+.bg-preset-btn.upload-btn {
+  background: transparent;
+  border-color: var(--border);
+  color: var(--text-h);
+  text-shadow: none;
+}
+
+.bg-preset-btn.upload-btn.active {
+  background: #ede5ff;
+  border-color: #a78bff;
+}
+
+.bg-img-label {
+  color: var(--text);
+  font-size: 13px;
+  margin: 0;
+}
+
+.bg-img-label button {
+  background: transparent;
+  border-radius: 8px;
+  color: #999;
+  font-size: 12px;
+  font-weight: 600;
+  min-width: auto;
+  padding: 2px 8px;
+}
+
+/* ─── Preview header & tabs ──────────────────────── */
+.preview-header {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  justify-content: center;
+}
+
+.preview-tabs {
+  display: flex;
+  background: #f0ede5;
+  border-radius: 10px;
+  padding: 3px;
+  gap: 2px;
+}
+
+.preview-tab {
+  background: transparent;
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 700;
+  min-width: auto;
+  opacity: 0.6;
+  padding: 6px 14px;
+  transition: background 0.12s, opacity 0.12s;
+}
+
+.preview-tab.active {
+  background: #fff;
+  color: var(--text-h);
+  opacity: 1;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+}
+
+/* ─── Video preview player ───────────────────────── */
+.video-wrapper {
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.22);
+  width: 270px;
+  height: 480px;
+  background: #000;
+}
+
+.video-wrapper video {
+  display: block;
+  width: 270px;
+  height: 480px;
+  object-fit: contain;
+}
+
+/* ─── Download button ────────────────────────────── */
+.download-btn {
+  background: #059669;
+  border-radius: 14px;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 800;
+  padding: 12px 24px;
+  transition: opacity 0.12s;
+  width: 270px;
+}
+
+.download-btn:hover {
+  opacity: 0.88;
+}
+
+/* ─── One-Tap Panel ──────────────────────────────── */
+.onetap-panel {
+  background: linear-gradient(135deg, rgba(255, 0, 80, 0.08), rgba(255, 165, 0, 0.08), rgba(255, 215, 0, 0.08));
+  border: 2px solid rgba(255, 0, 80, 0.3);
+  border-radius: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px;
+}
+
+.onetap-btn {
+  background: linear-gradient(135deg, #ff0050, #ff6b00, #ffb700);
+  background-size: 200% 200%;
+  animation: gradient-shift 3s ease infinite;
+  border-radius: 18px;
+  color: #fff;
+  font-size: 17px;
+  font-weight: 900;
+  padding: 22px 24px;
+  letter-spacing: 0.02em;
+  box-shadow: 0 8px 24px rgba(255, 0, 80, 0.25);
+  transition: transform 0.1s, opacity 0.12s;
+}
+
+.onetap-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(255, 0, 80, 0.35);
+}
+
+.onetap-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  animation: none;
+}
+
+.onetap-hint {
+  color: var(--text);
+  font-size: 13px;
+  margin: 0;
+  text-align: center;
+  opacity: 0.75;
+}
+
+/* ─── Seedance Panel ─────────────────────────────── */
+.seedance-panel {
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.06), rgba(59, 130, 246, 0.06));
+  border: 1px solid rgba(124, 58, 237, 0.25);
+  border-radius: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px;
+}
+
+.seedance-title {
+  color: var(--text-h);
+  font-size: 16px;
+  font-weight: 800;
+  margin: 0;
+}
+
+.seedance-sub {
+  color: var(--text);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  margin-left: 8px;
+  opacity: 0.6;
+  text-transform: uppercase;
+}
+
+.seedance-help {
+  color: var(--text);
+  font-size: 12px;
+  margin: 0;
+  opacity: 0.7;
+}
+
+.seedance-help a {
+  color: #7c3aed;
+  text-decoration: underline;
+}
+
+.seedance-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.seedance-option-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.seedance-option-group > label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.seedance-auto-btn {
+  background: linear-gradient(135deg, #ec4899, #f97316, #eab308);
+  background-size: 200% 200%;
+  animation: gradient-shift 4s ease infinite;
+  border-radius: 16px;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 800;
+  padding: 18px 22px;
+  transition: opacity 0.12s, transform 0.1s;
+  letter-spacing: 0.02em;
+}
+
+.seedance-auto-btn:hover:not(:disabled) {
+  opacity: 0.94;
+  transform: translateY(-1px);
+}
+
+.seedance-auto-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  animation: none;
+}
+
+@keyframes gradient-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.seedance-gen-btn {
+  background: linear-gradient(135deg, #7c3aed, #3b82f6);
+  border-radius: 14px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 12px 18px;
+  transition: opacity 0.12s, transform 0.1s;
+}
+
+.seedance-gen-btn:hover:not(:disabled) {
+  opacity: 0.92;
+  transform: translateY(-1px);
+}
+
+.seedance-gen-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.seedance-cancel-btn {
+  background: #6b7280;
+  border-radius: 14px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 14px 20px;
+  animation: pulse-voice 1.5s ease-in-out infinite;
+}
+
+.seedance-error {
+  background: #fff0ea;
+  border: 1px solid #ffc5ad;
+  border-radius: 12px;
+  color: #9b2d0d;
+  font-size: 13px;
+  margin: 0;
+  padding: 10px 14px;
+}
+
+.seedance-active {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.seedance-active-msg {
+  background: #edfbea;
+  border: 1px solid #a8dfa0;
+  border-radius: 12px;
+  color: #1a6b12;
+  font-size: 13px;
+  font-weight: 700;
+  margin: 0;
+  padding: 10px 14px;
+}
+
+.seedance-clear-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  color: var(--text-h);
+  font-size: 13px;
+  font-weight: 700;
+  padding: 10px 14px;
+}
+
+.seedance-clear-btn:hover {
+  background: #f0ede5;
+}
+
+.canvas-wrapper canvas {
+  display: block;
+  width: 270px;
+  height: 480px;
+}
+
+.canvas-size {
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 12px;
+  margin: 0;
+  opacity: 0.6;
+}
+
+@media (max-width: 960px) {
+  .tiktok-creator {
+    padding: 24px 18px;
+  }
+
+  .creator-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .creator-preview {
+    position: static;
+    order: -1;
+  }
+}
