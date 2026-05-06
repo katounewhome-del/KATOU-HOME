@@ -5,7 +5,7 @@ import { generateSeedanceVideo, loadVideoElement, type SeedanceProgressUpdate } 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 type Template = 'gradient' | 'dark' | 'minimal' | 'psych'
-type BgPreset = 'none' | 'space' | 'sakura' | 'neon' | 'forest'
+type BgPreset = 'none' | 'space' | 'sakura' | 'neon' | 'forest' | 'cinema_city' | 'warp' | 'aurora'
 type ExportState = 'idle' | 'encoding' | 'done'
 type PreviewView = 'canvas' | 'video'
 
@@ -152,6 +152,95 @@ function drawBgPreset(ctx: CanvasRenderingContext2D, preset: BgPreset, t: number
     mg.addColorStop(1, 'transparent')
     ctx.fillStyle = mg
     ctx.fillRect(0, 0, w, h)
+  } else if (preset === 'cinema_city') {
+    const sky = ctx.createLinearGradient(0, 0, 0, h)
+    sky.addColorStop(0, '#1a0533'); sky.addColorStop(0.5, '#3a0a55'); sky.addColorStop(1, '#5a1a30')
+    ctx.fillStyle = sky; ctx.fillRect(0, 0, w, h)
+    for (let i = 0; i < 60; i++) {
+      const sx = (i * 137.508) % w; const sy = (i * 97.381) % (h * 0.55)
+      ctx.fillStyle = `rgba(255,255,255,${0.4 + 0.4 * Math.sin(t * 1.5 + i)})`
+      ctx.beginPath(); ctx.arc(sx, sy, 1, 0, Math.PI * 2); ctx.fill()
+    }
+    const moonGlow = ctx.createRadialGradient(w * 0.78, h * 0.18, 0, w * 0.78, h * 0.18, 90)
+    moonGlow.addColorStop(0, 'rgba(255,250,200,0.55)'); moonGlow.addColorStop(1, 'transparent')
+    ctx.fillStyle = moonGlow; ctx.fillRect(w * 0.78 - 90, h * 0.18 - 90, 180, 180)
+    ctx.fillStyle = '#fff5d8'; ctx.beginPath(); ctx.arc(w * 0.78, h * 0.18, 38, 0, Math.PI * 2); ctx.fill()
+    const buildings: [number, number, number, number][] = [[0,0.66,0.18,0.34],[0.16,0.55,0.16,0.45],[0.31,0.62,0.13,0.38],[0.43,0.48,0.17,0.52],[0.59,0.6,0.13,0.4],[0.71,0.46,0.15,0.54],[0.85,0.62,0.15,0.38]]
+    for (const [bx, by, bw2, bh2] of buildings) {
+      ctx.fillStyle = '#0a0518'; ctx.fillRect(bx * w, by * h, bw2 * w, bh2 * h)
+      const cols = 4, rows = Math.max(4, Math.floor(bh2 * 16))
+      for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+        const wx = bx * w + (bw2 * w / cols) * c + 5
+        const wy = by * h + (bh2 * h / rows) * r + 5
+        const ww = bw2 * w / cols - 10, wh2 = bh2 * h / rows - 10
+        if (wh2 < 3 || ww < 3) continue
+        const seed = bx * 1000 + by * 100 + r * 10 + c
+        const on = Math.sin(t * 0.6 + seed * 0.7) > 0.2
+        ctx.fillStyle = on ? `rgba(255, 215, 100, ${0.55 + 0.35 * Math.sin(t * 2.5 + seed)})` : 'rgba(40, 25, 50, 0.7)'
+        ctx.fillRect(wx, wy, ww, wh2)
+      }
+    }
+    ctx.fillStyle = 'rgba(255,170,0,0.85)'
+    for (let i = 0; i < 6; i++) {
+      const lx = ((t * 60 + i * 110) % (w + 60)) - 30
+      ctx.fillRect(lx, h * 0.94, 36, 4); ctx.fillRect(lx + 6, h * 0.96, 26, 3)
+    }
+  } else if (preset === 'warp') {
+    ctx.fillStyle = '#000007'; ctx.fillRect(0, 0, w, h)
+    const cx = w / 2, cy = h / 2
+    for (let i = 0; i < 220; i++) {
+      const seed = i * 137.508
+      const angle = (seed * 0.0173) % (Math.PI * 2)
+      const speed = 0.4 + ((seed * 7) % 100) / 100
+      const phase = ((seed * 17) % 1000) / 1000
+      const dist = ((t * speed * 280 + phase * 700) % 700)
+      if (dist < 5 || dist > 700) continue
+      const x1 = cx + Math.cos(angle) * dist
+      const y1 = cy + Math.sin(angle) * dist
+      const x2 = cx + Math.cos(angle) * (dist + dist * 0.18)
+      const y2 = cy + Math.sin(angle) * (dist + dist * 0.18)
+      const intensity = Math.min(1, dist / 300)
+      const hue = (seed % 60) - 30
+      ctx.strokeStyle = `rgba(${180 + hue}, ${200 + hue * 0.5}, 255, ${intensity * 0.95})`
+      ctx.lineWidth = 0.8 + intensity * 1.6
+      ctx.lineCap = 'round'
+      ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke()
+    }
+    const gg = ctx.createRadialGradient(cx, cy, 0, cx, cy, 130)
+    gg.addColorStop(0, 'rgba(120,180,255,0.45)'); gg.addColorStop(0.5, 'rgba(80,100,200,0.15)'); gg.addColorStop(1, 'transparent')
+    ctx.fillStyle = gg; ctx.fillRect(0, 0, w, h)
+  } else if (preset === 'aurora') {
+    ctx.fillStyle = '#020812'; ctx.fillRect(0, 0, w, h)
+    for (let i = 0; i < 90; i++) {
+      const sx = (i * 137.508) % w; const sy = (i * 97.381) % (h * 0.7)
+      ctx.fillStyle = `rgba(255,255,255,${0.3 + 0.5 * Math.sin(t * 1.3 + i * 0.7)})`
+      ctx.beginPath(); ctx.arc(sx, sy, 0.9, 0, Math.PI * 2); ctx.fill()
+    }
+    for (let layer = 0; layer < 3; layer++) {
+      ctx.save(); ctx.globalAlpha = 0.42 - layer * 0.1
+      const palette: [string, string][] = [['#10ff90', '#80ff50'], ['#40c0ff', '#9050ff'], ['#ff60d0', '#ff9050']]
+      const [c1, c2] = palette[layer]
+      const grad = ctx.createLinearGradient(0, h * 0.2, 0, h * 0.7)
+      grad.addColorStop(0, 'transparent'); grad.addColorStop(0.4, c1); grad.addColorStop(0.85, c2); grad.addColorStop(1, 'transparent')
+      ctx.fillStyle = grad
+      ctx.beginPath(); ctx.moveTo(0, h * 0.55)
+      for (let x = 0; x <= w; x += 8) {
+        const wave = Math.sin(x * 0.012 + t * 0.55 + layer * 1.4) * 32
+        const wave2 = Math.sin(x * 0.005 + t * 0.32 + layer * 2.1) * 55
+        ctx.lineTo(x, h * 0.32 + wave + wave2 + layer * 28)
+      }
+      for (let x = w; x >= 0; x -= 8) {
+        const wave = Math.sin(x * 0.014 + t * 0.45 + layer * 0.9) * 32
+        ctx.lineTo(x, h * 0.62 + wave + layer * 28)
+      }
+      ctx.closePath(); ctx.fill(); ctx.restore()
+    }
+    ctx.fillStyle = '#000610'
+    ctx.beginPath(); ctx.moveTo(0, h); ctx.lineTo(0, h * 0.78)
+    ctx.lineTo(w * 0.14, h * 0.66); ctx.lineTo(w * 0.28, h * 0.72)
+    ctx.lineTo(w * 0.43, h * 0.55); ctx.lineTo(w * 0.58, h * 0.62)
+    ctx.lineTo(w * 0.76, h * 0.5); ctx.lineTo(w * 0.9, h * 0.6)
+    ctx.lineTo(w, h * 0.7); ctx.lineTo(w, h); ctx.closePath(); ctx.fill()
   } else if (preset === 'forest') {
     const fg = ctx.createLinearGradient(0, 0, 0, h)
     fg.addColorStop(0, '#061408')
@@ -871,10 +960,10 @@ export function TikTokCreator() {
           <div className="form-group">
             <label>背景</label>
             <div className="bg-presets">
-              {([['none','デフォルト','#08081e'],['space','🌌 宇宙','#040412'],['sakura','🌸 桜','#ffe0e8'],['neon','⚡ ネオン','#03030a'],['forest','🌿 森','#061408']] as [BgPreset,string,string][]).map(([val,label,color]) => (
-                <button key={val} className={`bg-preset-btn${bgPreset===val&&!bgImageEl?' active':''}`}
+              {([['none','デフォルト','#08081e'],['cinema_city','🌃 夜景','#1a0533'],['warp','🚀 ワープ','#000007'],['aurora','🌌 オーロラ','#020812'],['space','✨ 宇宙','#040412'],['sakura','🌸 桜','#ffe0e8'],['neon','⚡ ネオン','#03030a'],['forest','🌿 森','#061408']] as [BgPreset,string,string][]).map(([val,label,color]) => (
+                <button key={val} className={`bg-preset-btn${bgPreset===val&&!bgImageEl&&!seedanceVideoEl?' active':''}`}
                   style={{ '--bg-color': color } as React.CSSProperties}
-                  onClick={() => { setBgPreset(val); setBgImageEl(null) }}>
+                  onClick={() => { setBgPreset(val); setBgImageEl(null); handleClearSeedance() }}>
                   {label}
                 </button>
               ))}
