@@ -516,6 +516,136 @@ dd {
   height: 480px;
 }
 
+.canvas-wrapper.hidden {
+  display: none;
+}
+
+/* ─── Background presets ─────────────────────────── */
+.bg-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.bg-preset-btn {
+  background: var(--bg-color, #111);
+  border: 2px solid transparent;
+  border-radius: 12px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  min-width: auto;
+  padding: 8px 14px;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+  transition: border-color 0.12s, transform 0.1s;
+}
+
+.bg-preset-btn:hover {
+  transform: translateY(-1px);
+}
+
+.bg-preset-btn.active {
+  border-color: #a78bff;
+  box-shadow: 0 0 0 3px rgba(167, 139, 255, 0.25);
+}
+
+.bg-preset-btn.upload-btn {
+  background: transparent;
+  border-color: var(--border);
+  color: var(--text-h);
+  text-shadow: none;
+}
+
+.bg-preset-btn.upload-btn.active {
+  background: #ede5ff;
+  border-color: #a78bff;
+}
+
+.bg-img-label {
+  color: var(--text);
+  font-size: 13px;
+  margin: 0;
+}
+
+.bg-img-label button {
+  background: transparent;
+  border-radius: 8px;
+  color: #999;
+  font-size: 12px;
+  font-weight: 600;
+  min-width: auto;
+  padding: 2px 8px;
+}
+
+/* ─── Preview header & tabs ──────────────────────── */
+.preview-header {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  justify-content: center;
+}
+
+.preview-tabs {
+  display: flex;
+  background: #f0ede5;
+  border-radius: 10px;
+  padding: 3px;
+  gap: 2px;
+}
+
+.preview-tab {
+  background: transparent;
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 700;
+  min-width: auto;
+  opacity: 0.6;
+  padding: 6px 14px;
+  transition: background 0.12s, opacity 0.12s;
+}
+
+.preview-tab.active {
+  background: #fff;
+  color: var(--text-h);
+  opacity: 1;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+}
+
+/* ─── Video preview player ───────────────────────── */
+.video-wrapper {
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.22);
+  width: 270px;
+  height: 480px;
+  background: #000;
+}
+
+.video-wrapper video {
+  display: block;
+  width: 270px;
+  height: 480px;
+  object-fit: contain;
+}
+
+/* ─── Download button ────────────────────────────── */
+.download-btn {
+  background: #059669;
+  border-radius: 14px;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 800;
+  padding: 12px 24px;
+  transition: opacity 0.12s;
+  width: 270px;
+}
+
+.download-btn:hover {
+  opacity: 0.88;
+}
+
 .canvas-wrapper canvas {
   display: block;
   width: 270px;
