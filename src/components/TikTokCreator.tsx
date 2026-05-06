@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback, type ChangeEvent } from 'react'
 import { Muxer, ArrayBufferTarget } from 'mp4-muxer'
+import { generateSeedanceVideo, loadVideoElement, type SeedanceProgressUpdate } from '../api/seedance'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -306,7 +307,8 @@ function generateAudioSamples(duration: number): Float32Array {
 
 async function exportVideo(
   canvas: HTMLCanvasElement,
-  drawFn: (ctx: CanvasRenderingContext2D, t: number) => void,
+  drawFnSync: (ctx: CanvasRenderingContext2D, t: number) => void,
+  drawFnAsync: (ctx: CanvasRenderingContext2D, t: number) => Promise<void>,
   duration: number,
   onProgress: (p: number) => void,
 ): Promise<{ blob: Blob; ext: 'mp4' | 'webm' }> {
@@ -317,22 +319,22 @@ async function exportVideo(
     typeof AudioData !== 'undefined'
 
   if (!hasWebCodecs) {
-    const blob = await exportWebM(canvas, drawFn, duration, onProgress)
+    const blob = await exportWebM(canvas, drawFnSync, duration, onProgress)
     return { blob, ext: 'webm' }
   }
 
   try {
-    const blob = await exportMP4(canvas, drawFn, duration, onProgress)
+    const blob = await exportMP4(canvas, drawFnAsync, duration, onProgress)
     return { blob, ext: 'mp4' }
   } catch {
-    const blob = await exportWebM(canvas, drawFn, duration, onProgress)
+    const blob = await exportWebM(canvas, drawFnSync, duration, onProgress)
     return { blob, ext: 'webm' }
   }
 }
 
 async function exportMP4(
   canvas: HTMLCanvasElement,
-  drawFn: (ctx: CanvasRenderingContext2D, t: number) => void,
+  drawFn: (ctx: CanvasRenderingContext2D, t: number) => Promise<void>,
   duration: number,
   onProgress: (p: number) => void,
 ): Promise<Blob> {
@@ -374,7 +376,7 @@ async function exportMP4(
 
   // Encode video frames offline (faster than real-time)
   for (let i = 0; i < totalFrames; i++) {
-    drawFn(ctx, i / FPS)
+    await drawFn(ctx, i / FPS)
     const frame = new VideoFrame(canvas, { timestamp: Math.round((i / FPS) * 1_000_000) })
     while (videoEncoder.encodeQueueSize > 12) await new Promise<void>(r => setTimeout(r, 4))
     videoEncoder.encode(frame, { keyFrame: i % (FPS * 2) === 0 })
@@ -469,6 +471,16 @@ export function TikTokCreator() {
   const [previewView, setPreviewView] = useState<PreviewView>('canvas')
   const [isSpeaking, setIsSpeaking] = useState(false)
 
+  // Seedance state
+  const [seedanceApiKey, setSeedanceApiKey] = useState(() => localStorage.getItem('seedance_api_key') ?? '')
+  const [seedancePrompt, setSeedancePrompt] = useState('夜の渋谷の街並み、ネオンの光、雨上がり、シネマティック')
+  const [seedanceResolution, setSeedanceResolution] = useState<'480p' | '720p' | '1080p'>('720p')
+  const [seedanceDuration, setSeedanceDuration] = useState<'5' | '10'>('5')
+  const [seedanceVideoEl, setSeedanceVideoEl] = useState<HTMLVideoElement | null>(null)
+  const [seedanceStatus, setSeedanceStatus] = useState<SeedanceProgressUpdate | null>(null)
+  const [seedanceError, setSeedanceError] = useState<string>('')
+  const seedanceAbortRef = useRef<AbortController | null>(null)
+
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const rafRef = useRef<number>(0)
@@ -476,12 +488,23 @@ export function TikTokCreator() {
   const urlCleanupRef = useRef<string | null>(null)
 
   useEffect(() => () => { if (urlCleanupRef.current) URL.revokeObjectURL(urlCleanupRef.current) }, [])
+  useEffect(() => { localStorage.setItem('seedance_api_key', seedanceApiKey) }, [seedanceApiKey])
 
   // ── Draw background layer ───────────────────────────────────────────────────
 
   const drawBg = useCallback((ctx: CanvasRenderingContext2D, t: number, defaultDark: boolean) => {
     const w = CANVAS_W, h = CANVAS_H
-    if (bgImageEl) {
+    if (seedanceVideoEl && seedanceVideoEl.readyState >= 2) {
+      const v = seedanceVideoEl
+      const va = v.videoWidth / v.videoHeight
+      const ca = w / h
+      let sx = 0, sy = 0, sw = v.videoWidth, sh = v.videoHeight
+      if (va > ca) { sw = sh * ca; sx = (v.videoWidth - sw) / 2 }
+      else { sh = sw / ca; sy = (v.videoHeight - sh) / 2 }
+      ctx.drawImage(v, sx, sy, sw, sh, 0, 0, w, h)
+      ctx.fillStyle = 'rgba(4,4,18,0.5)'
+      ctx.fillRect(0, 0, w, h)
+    } else if (bgImageEl) {
       const ia = bgImageEl.naturalWidth / bgImageEl.naturalHeight
       const ca = w / h
       let sx = 0, sy = 0, sw = bgImageEl.naturalWidth, sh = bgImageEl.naturalHeight
@@ -503,7 +526,7 @@ export function TikTokCreator() {
       glow.addColorStop(0, 'rgba(120,60,255,0.2)'); glow.addColorStop(0.6, 'rgba(60,20,180,0.07)'); glow.addColorStop(1, 'transparent')
       ctx.fillStyle = glow; ctx.fillRect(0, 0, w, h)
     }
-  }, [bgPreset, bgImageEl])
+  }, [bgPreset, bgImageEl, seedanceVideoEl])
 
   // ── Psych template UI ───────────────────────────────────────────────────────
 
@@ -512,8 +535,8 @@ export function TikTokCreator() {
     const norm = t / config.duration
     drawBg(ctx, t, true)
 
-    // Neural network (on dark bgs only)
-    const useDarkNeural = !bgImageEl && (bgPreset === 'none' || bgPreset === 'space' || bgPreset === 'neon')
+    // Neural network (on dark bgs only, not over video/image)
+    const useDarkNeural = !seedanceVideoEl && !bgImageEl && (bgPreset === 'none' || bgPreset === 'space' || bgPreset === 'neon')
     if (useDarkNeural) {
       ctx.save(); ctx.globalAlpha = 0.2
       const nodes: [number, number][] = [[0.12,0.18],[0.88,0.14],[0.08,0.52],[0.92,0.48],[0.18,0.82],[0.82,0.78],[0.5,0.1],[0.5,0.9],[0.3,0.35],[0.72,0.38]]
@@ -605,14 +628,14 @@ export function TikTokCreator() {
     ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.fillRect(0, h - 110, w, 110)
     ctx.fillStyle = '#c4b5fd'; ctx.font = 'bold 23px sans-serif'; ctx.textAlign = 'center'; ctx.fillText(config.hashtags, w / 2, h - 40)
     ctx.restore()
-  }, [config, drawBg, bgPreset, bgImageEl])
+  }, [config, drawBg, bgPreset, bgImageEl, seedanceVideoEl])
 
   // ── General templates UI ────────────────────────────────────────────────────
 
   const drawGeneralFrame = useCallback((ctx: CanvasRenderingContext2D, t: number) => {
     const w = CANVAS_W, h = CANVAS_H
     const norm = t / config.duration
-    const hasBgOverride = !!bgImageEl || bgPreset !== 'none'
+    const hasBgOverride = !!seedanceVideoEl || !!bgImageEl || bgPreset !== 'none'
 
     if (hasBgOverride) {
       drawBg(ctx, t, false)
@@ -669,12 +692,28 @@ export function TikTokCreator() {
     ctx.fillStyle = 'rgba(0,0,0,0.45)'; ctx.fillRect(0, h-120, w, 120)
     ctx.fillStyle = '#fff'; ctx.font = 'bold 26px sans-serif'; ctx.textAlign = 'center'; ctx.fillText(config.hashtags, w/2, h-48)
     ctx.restore()
-  }, [config, drawBg, bgPreset, bgImageEl])
+  }, [config, drawBg, bgPreset, bgImageEl, seedanceVideoEl])
 
   const drawFrame = useCallback((ctx: CanvasRenderingContext2D, t: number) => {
     if (config.template === 'psych') drawPsychFrame(ctx, t, psychNum, showCharacter)
     else drawGeneralFrame(ctx, t)
   }, [config.template, drawPsychFrame, drawGeneralFrame, psychNum, showCharacter])
+
+  const drawFrameOffline = useCallback(async (ctx: CanvasRenderingContext2D, t: number) => {
+    const v = seedanceVideoEl
+    if (v && v.duration > 0 && Number.isFinite(v.duration)) {
+      const target = t % v.duration
+      if (Math.abs(v.currentTime - target) > 0.05) {
+        await new Promise<void>((resolve) => {
+          const handler = () => { v.removeEventListener('seeked', handler); resolve() }
+          v.addEventListener('seeked', handler)
+          v.currentTime = target
+          setTimeout(() => { v.removeEventListener('seeked', handler); resolve() }, 500)
+        })
+      }
+    }
+    drawFrame(ctx, t)
+  }, [drawFrame, seedanceVideoEl])
 
   // ── Preview loop ────────────────────────────────────────────────────────────
 
@@ -705,7 +744,7 @@ export function TikTokCreator() {
     setProgress(0)
 
     try {
-      const { blob, ext } = await exportVideo(canvas, drawFrame, config.duration, setProgress)
+      const { blob, ext } = await exportVideo(canvas, drawFrame, drawFrameOffline, config.duration, setProgress)
       if (urlCleanupRef.current) URL.revokeObjectURL(urlCleanupRef.current)
       const url = URL.createObjectURL(blob)
       urlCleanupRef.current = url
@@ -744,8 +783,45 @@ export function TikTokCreator() {
     if (!file) return
     const img = new Image()
     const url = URL.createObjectURL(file)
-    img.onload = () => { setBgImageEl(img); setBgPreset('none'); URL.revokeObjectURL(url) }
+    img.onload = () => { setBgImageEl(img); setBgPreset('none'); setSeedanceVideoEl(null); URL.revokeObjectURL(url) }
     img.src = url
+  }
+
+  const handleGenerateSeedance = async () => {
+    if (!seedanceApiKey.trim()) { setSeedanceError('fal.ai のAPIキーを入力してください'); return }
+    if (!seedancePrompt.trim()) { setSeedanceError('プロンプトを入力してください'); return }
+    setSeedanceError('')
+    seedanceAbortRef.current?.abort()
+    const ctrl = new AbortController()
+    seedanceAbortRef.current = ctrl
+    try {
+      const url = await generateSeedanceVideo(
+        seedanceApiKey,
+        { prompt: seedancePrompt, aspect_ratio: '9:16', duration: seedanceDuration, resolution: seedanceResolution },
+        setSeedanceStatus,
+        ctrl.signal,
+      )
+      const video = await loadVideoElement(url)
+      setSeedanceVideoEl(video)
+      setBgImageEl(null)
+      setBgPreset('none')
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : '不明なエラー'
+      setSeedanceError(msg)
+      setSeedanceStatus(null)
+    }
+  }
+
+  const handleCancelSeedance = () => {
+    seedanceAbortRef.current?.abort()
+    setSeedanceStatus(null)
+  }
+
+  const handleClearSeedance = () => {
+    seedanceVideoEl?.pause()
+    setSeedanceVideoEl(null)
+    setSeedanceStatus(null)
+    setSeedanceError('')
   }
 
   const update = <K extends keyof VideoConfig>(key: K, value: VideoConfig[K]) =>
@@ -808,6 +884,73 @@ export function TikTokCreator() {
             </div>
             <input ref={fileInputRef} type="file" accept="image/*" style={{ display:'none' }} onChange={handleBgUpload} />
             {bgImageEl && <p className="bg-img-label">画像設定済み <button onClick={() => setBgImageEl(null)}>✕ 削除</button></p>}
+          </div>
+
+          {/* Seedance AI Background */}
+          <div className="seedance-panel">
+            <h3 className="seedance-title">🎨 AI動画背景 <span className="seedance-sub">Seedance / fal.ai</span></h3>
+
+            {seedanceVideoEl ? (
+              <div className="seedance-active">
+                <p className="seedance-active-msg">✓ AI動画を背景に適用中</p>
+                <button className="seedance-clear-btn" onClick={handleClearSeedance}>✕ 削除して通常背景に戻す</button>
+              </div>
+            ) : (
+              <>
+                <div className="form-group">
+                  <label>fal.ai APIキー</label>
+                  <input
+                    type="password"
+                    value={seedanceApiKey}
+                    onChange={e => setSeedanceApiKey(e.target.value)}
+                    placeholder="********-****-****-****-************:****"
+                    autoComplete="off"
+                  />
+                  <p className="seedance-help">
+                    <a href="https://fal.ai/dashboard/keys" target="_blank" rel="noreferrer">fal.ai/dashboard/keys</a> から取得（無料クレジット付与）
+                  </p>
+                </div>
+
+                <div className="form-group">
+                  <label>動画プロンプト（英語推奨だが日本語もOK）</label>
+                  <textarea
+                    value={seedancePrompt}
+                    onChange={e => setSeedancePrompt(e.target.value)}
+                    rows={3}
+                    placeholder="例: cinematic shot of neon-lit Shibuya street at night, rain"
+                  />
+                </div>
+
+                <div className="seedance-options">
+                  <div className="seedance-option-group">
+                    <label>長さ</label>
+                    <div className="template-buttons">
+                      {(['5','10'] as const).map(d => (
+                        <button key={d} className={`template-btn${seedanceDuration===d?' active':''}`} onClick={() => setSeedanceDuration(d)}>{d}秒</button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="seedance-option-group">
+                    <label>解像度</label>
+                    <div className="template-buttons">
+                      {(['480p','720p','1080p'] as const).map(r => (
+                        <button key={r} className={`template-btn${seedanceResolution===r?' active':''}`} onClick={() => setSeedanceResolution(r)}>{r}</button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {seedanceStatus && (seedanceStatus.status === 'submitting' || seedanceStatus.status === 'queued' || seedanceStatus.status === 'in_progress') ? (
+                  <button className="seedance-cancel-btn" onClick={handleCancelSeedance}>{seedanceStatus.message} (キャンセル)</button>
+                ) : (
+                  <button className="seedance-gen-btn" onClick={handleGenerateSeedance} disabled={!seedanceApiKey.trim() || !seedancePrompt.trim()}>
+                    🎨  AI動画を生成（fal.ai）
+                  </button>
+                )}
+
+                {seedanceError && <p className="seedance-error">⚠ {seedanceError}</p>}
+              </>
+            )}
           </div>
 
           <div className="form-group">
