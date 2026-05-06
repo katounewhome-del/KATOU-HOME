@@ -646,6 +646,50 @@ dd {
   opacity: 0.88;
 }
 
+/* ─── One-Tap Panel ──────────────────────────────── */
+.onetap-panel {
+  background: linear-gradient(135deg, rgba(255, 0, 80, 0.08), rgba(255, 165, 0, 0.08), rgba(255, 215, 0, 0.08));
+  border: 2px solid rgba(255, 0, 80, 0.3);
+  border-radius: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px;
+}
+
+.onetap-btn {
+  background: linear-gradient(135deg, #ff0050, #ff6b00, #ffb700);
+  background-size: 200% 200%;
+  animation: gradient-shift 3s ease infinite;
+  border-radius: 18px;
+  color: #fff;
+  font-size: 17px;
+  font-weight: 900;
+  padding: 22px 24px;
+  letter-spacing: 0.02em;
+  box-shadow: 0 8px 24px rgba(255, 0, 80, 0.25);
+  transition: transform 0.1s, opacity 0.12s;
+}
+
+.onetap-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(255, 0, 80, 0.35);
+}
+
+.onetap-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  animation: none;
+}
+
+.onetap-hint {
+  color: var(--text);
+  font-size: 13px;
+  margin: 0;
+  text-align: center;
+  opacity: 0.75;
+}
+
 /* ─── Seedance Panel ─────────────────────────────── */
 .seedance-panel {
   background: linear-gradient(135deg, rgba(124, 58, 237, 0.06), rgba(59, 130, 246, 0.06));

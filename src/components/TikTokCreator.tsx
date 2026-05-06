@@ -928,6 +928,43 @@ export function TikTokCreator() {
     setSeedanceError('')
   }
 
+  const handleOneTap = async () => {
+    if (exportState === 'encoding') return
+    // Cycle through cinematic backgrounds for variety
+    const presets: BgPreset[] = ['cinema_city', 'warp', 'aurora', 'space', 'sakura', 'forest', 'neon']
+    const stored = Number(localStorage.getItem('onetap_index') ?? '0')
+    const next = (stored + 1) % presets.length
+    localStorage.setItem('onetap_index', String(next))
+    const pick = presets[next]
+
+    // Clear other backgrounds, set the picked preset
+    if (seedanceVideoEl) {
+      seedanceVideoEl.pause()
+      setSeedanceVideoEl(null)
+      setSeedanceStatus(null)
+    }
+    setBgImageEl(null)
+    setBgPreset(pick)
+
+    // If no preset selected (psych default), pick one for visual variety; otherwise cycle a fresh fact too
+    if (config.template === 'psych') {
+      const factIndex = (Number(localStorage.getItem('onetap_fact') ?? '-1') + 1) % PSYCH_FACTS.length
+      localStorage.setItem('onetap_fact', String(factIndex))
+      const fact = PSYCH_FACTS[factIndex]
+      setPsychNum(fact.number)
+      setConfig(prev => ({
+        ...prev,
+        title: fact.title,
+        subtitle: fact.subtitle,
+        hashtags: '#心理学 #豆知識 #雑学 #tiktok #psychology',
+      }))
+    }
+
+    // Wait for state to propagate to draw fn refs
+    await new Promise(r => setTimeout(r, 250))
+    await runExport()
+  }
+
   const handleFullAuto = async () => {
     if (!seedanceApiKey.trim()) {
       setSeedanceError('まず fal.ai のAPIキーを入力してください')
@@ -993,7 +1030,23 @@ export function TikTokCreator() {
       <div className="creator-layout">
         {/* ── Settings ── */}
         <div className="creator-form">
-          <h2 className="form-title">動画設定</h2>
+          {/* ONE-TAP MODE — no setup, no API key required */}
+          <div className="onetap-panel">
+            <button
+              className="onetap-btn"
+              onClick={handleOneTap}
+              disabled={exportState === 'encoding'}
+            >
+              {exportState === 'encoding'
+                ? `🎬 作成中... ${progress}%`
+                : '✨ ワンタップでMP4作成（設定なし・無料・全自動）'}
+            </button>
+            <p className="onetap-hint">
+              押すたびに違う心理学ネタ ＋ 違う背景で MP4 が自動で生成・ダウンロードされます。
+            </p>
+          </div>
+
+          <h2 className="form-title">詳細設定（必要なら）</h2>
 
           <div className="form-group">
             <label>テンプレート</label>
