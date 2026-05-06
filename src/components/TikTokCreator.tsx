@@ -30,19 +30,22 @@ interface PsychFact {
 
 const CANVAS_W = 540
 const CANVAS_H = 960
+const CANVAS_SCALE = 2 // Output at 1080x1920 (TikTok-recommended full size)
+const OUTPUT_W = CANVAS_W * CANVAS_SCALE
+const OUTPUT_H = CANVAS_H * CANVAS_SCALE
 const FPS = 30
 
 const PSYCH_FACTS: PsychFact[] = [
-  { number: 'No.1', title: '返報性の原理', subtitle: '何かをしてもらうと「お返しをしなければ」という気持ちになる心理。セールスや恋愛でもよく使われます。' },
-  { number: 'No.2', title: 'バンドワゴン効果', subtitle: '「みんながやっているから自分も」と思う心理。SNSのトレンドや流行語もこの効果で広まります。' },
-  { number: 'No.3', title: 'アンカリング効果', subtitle: '最初に見た数字や情報が基準になってしまう心理。「元値10,000円→今なら3,000円」が効く理由です。' },
-  { number: 'No.4', title: 'カリギュラ効果', subtitle: '「見てはいけない」と言われるほど気になる心理。禁止されると欲求が高まるのはこのためです。' },
-  { number: 'No.5', title: 'ハロー効果', subtitle: '外見が良い人は仕事もできると思い込む心理。一つの特徴が全体の評価に影響してしまいます。' },
-  { number: 'No.6', title: '吊り橋効果', subtitle: 'ドキドキする状況で一緒にいる人に恋愛感情を抱きやすくなる心理。不安が恋と混同されます。' },
-  { number: 'No.7', title: '認知的不協和', subtitle: '自分の行動と考えが矛盾するとき、無意識に考えを変えて矛盾をなくそうとする心理のしくみです。' },
-  { number: 'No.8', title: 'ツァイガルニク効果', subtitle: '完了より未完了の方が記憶に残りやすい心理。ドラマの「続きは次回！」はこれを利用しています。' },
-  { number: 'No.9', title: 'ピーク・エンドの法則', subtitle: '体験の評価は「最も感情が動いた瞬間」と「終わり方」で決まります。終わりよければすべてよし。' },
-  { number: 'No.10', title: 'フット・イン・ザ・ドア', subtitle: '小さなお願いを先に承諾してもらうと、次の大きなお願いも通りやすくなる段階的説得法です。' },
+  { number: 'No.1', title: '既読スルーの真実', subtitle: '返信が遅い人＝冷たい、ではありません。完璧主義の人ほど言葉を選ぶので時間がかかるんです。' },
+  { number: 'No.2', title: '0.1秒で決まる第一印象', subtitle: 'プリンストン大学の研究で、人は0.1秒で相手の信頼度を判断していることが判明しています。' },
+  { number: 'No.3', title: '会えば会うほど好きになる', subtitle: '単純接触効果（ザイオンス効果）。同じ人と繰り返し会うだけで、好感度は確実に上がります。' },
+  { number: 'No.4', title: '吊り橋の上で恋に落ちる', subtitle: 'ドキドキを恋と勘違いする心理。刺激的な体験を共有すると、相手への好感度が上がります。' },
+  { number: 'No.5', title: '名前を呼ぶ魔法', subtitle: '会話で相手の名前を呼ぶだけで信頼度が上がる。脳が「特別扱いされている」と感じるからです。' },
+  { number: 'No.6', title: 'うなずきの威力', subtitle: '相手の話に3回うなずくだけで好感度UP。聞き上手と呼ばれる人が必ずやっている技術です。' },
+  { number: 'No.7', title: '最初の3秒で謝れ', subtitle: '怒られた瞬間、3秒以内の謝罪は怒りを和らげます。言い訳より先に「ごめんなさい」が正解。' },
+  { number: 'No.8', title: '夜の決断は危険', subtitle: '判断力は夜になるほど低下します。大事な決断、告白、契約は朝にしましょう。' },
+  { number: 'No.9', title: '姿勢で性格が変わる', subtitle: '2分間胸を張るだけで自信ホルモンが増加。プレゼン前のおまじないに使える研究結果です。' },
+  { number: 'No.10', title: '別れ際が9割', subtitle: 'ピーク・エンドの法則。体験の印象は最高の瞬間と終わり方で決まります。最後に笑顔を。' },
 ]
 
 // ─── Utilities ───────────────────────────────────────────────────────────────
@@ -433,7 +436,7 @@ async function exportMP4(
 
   const muxer = new Muxer({
     target: new ArrayBufferTarget(),
-    video: { codec: 'avc', width: CANVAS_W, height: CANVAS_H },
+    video: { codec: 'avc', width: OUTPUT_W, height: OUTPUT_H },
     audio: { codec: 'aac', sampleRate: sr, numberOfChannels: 1 },
     firstTimestampBehavior: 'offset',
     fastStart: 'in-memory',
@@ -444,10 +447,10 @@ async function exportMP4(
     error: (e) => { throw e },
   })
   videoEncoder.configure({
-    codec: 'avc1.42001F',
-    width: CANVAS_W,
-    height: CANVAS_H,
-    bitrate: 2_800_000,
+    codec: 'avc1.640028', // H.264 High Profile Level 4.0 — supports 1080p
+    width: OUTPUT_W,
+    height: OUTPUT_H,
+    bitrate: 8_000_000, // 8 Mbps for crisp 1080×1920
     framerate: FPS,
   })
 
@@ -515,7 +518,7 @@ function exportWebM(
     const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus') ? 'video/webm;codecs=vp9,opus' : 'video/webm'
     const videoStream = canvas.captureStream(FPS)
     const combined = new MediaStream([...videoStream.getVideoTracks(), ...dest.stream.getAudioTracks()])
-    const recorder = new MediaRecorder(combined, { mimeType })
+    const recorder = new MediaRecorder(combined, { mimeType, videoBitsPerSecond: 8_000_000, audioBitsPerSecond: 192_000 })
     const chunks: Blob[] = []
 
     recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data) }
@@ -784,6 +787,10 @@ export function TikTokCreator() {
   }, [config, drawBg, bgPreset, bgImageEl, seedanceVideoEl])
 
   const drawFrame = useCallback((ctx: CanvasRenderingContext2D, t: number) => {
+    // Output canvas is 1080x1920; render with 540x960 logical coords scaled 2x
+    ctx.setTransform(CANVAS_SCALE, 0, 0, CANVAS_SCALE, 0, 0)
+    ctx.imageSmoothingEnabled = true
+    ctx.imageSmoothingQuality = 'high'
     if (config.template === 'psych') drawPsychFrame(ctx, t, psychNum, showCharacter)
     else drawGeneralFrame(ctx, t)
   }, [config.template, drawPsychFrame, drawGeneralFrame, psychNum, showCharacter])
@@ -1242,7 +1249,7 @@ export function TikTokCreator() {
           </div>
 
           <div className={`canvas-wrapper${previewView==='video'?' hidden':''}`}>
-            <canvas ref={canvasRef} width={CANVAS_W} height={CANVAS_H} />
+            <canvas ref={canvasRef} width={OUTPUT_W} height={OUTPUT_H} />
           </div>
 
           {previewView==='video' && generatedUrl && (
