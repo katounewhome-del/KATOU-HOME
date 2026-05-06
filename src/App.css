@@ -199,3 +199,277 @@ dd {
     flex-direction: column;
   }
 }
+
+/* ─── Tab Navigation ─────────────────────────────── */
+.page-tabs {
+  display: flex;
+  gap: 0;
+  padding: 24px 56px 0;
+  border-bottom: 2px solid var(--border);
+  background: rgba(255, 255, 255, 0.6);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.page-tab {
+  background: transparent;
+  border-radius: 0;
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 700;
+  min-width: auto;
+  opacity: 0.55;
+  padding: 14px 28px;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  transition: opacity 0.15s, border-color 0.15s;
+}
+
+.page-tab:hover {
+  opacity: 0.85;
+}
+
+.page-tab.active {
+  color: var(--text-h);
+  opacity: 1;
+  border-bottom-color: var(--accent);
+}
+
+@media (max-width: 860px) {
+  .page-tabs {
+    padding: 16px 18px 0;
+  }
+  .page-tab {
+    padding: 12px 18px;
+    font-size: 14px;
+  }
+}
+
+/* ─── TikTok Creator ─────────────────────────────── */
+.tiktok-creator {
+  padding: 40px 56px;
+}
+
+.creator-layout {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 40px;
+  align-items: start;
+}
+
+.creator-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-title {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text-h);
+  margin: 0 0 4px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.form-group textarea {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  font: inherit;
+  font-size: 15px;
+  padding: 12px 14px;
+  resize: vertical;
+  color: var(--text-h);
+  background: #fff;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.form-group textarea:focus {
+  border-color: var(--accent);
+}
+
+.form-group input[type='text'] {
+  border-radius: 14px;
+  outline: 1px solid var(--border);
+  padding: 12px 14px;
+  font-size: 15px;
+}
+
+.form-group input[type='color'] {
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  height: 48px;
+  padding: 4px;
+  width: 100%;
+}
+
+.form-group input[type='range'] {
+  border-radius: 0;
+  outline: none;
+  padding: 0;
+  accent-color: var(--accent);
+  width: 100%;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.template-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.template-btn {
+  background: #f0ede5;
+  border-radius: 12px;
+  color: var(--text-h);
+  font-size: 13px;
+  font-weight: 700;
+  min-width: auto;
+  padding: 10px 16px;
+  transition: background 0.15s;
+}
+
+.template-btn.active {
+  background: var(--accent);
+  color: #fff;
+}
+
+.record-btn {
+  background: #ff0050;
+  border-radius: 18px;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 800;
+  padding: 18px 24px;
+  transition: opacity 0.15s, transform 0.1s;
+  letter-spacing: 0.02em;
+}
+
+.record-btn:not(:disabled):hover {
+  opacity: 0.88;
+  transform: translateY(-1px);
+}
+
+.record-btn.recording {
+  background: #999;
+}
+
+.progress-bar {
+  background: #e8e4d8;
+  border-radius: 999px;
+  height: 8px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  background: #ff0050;
+  border-radius: 999px;
+  height: 100%;
+  transition: width 0.1s linear;
+}
+
+.success-msg {
+  background: #edfbea;
+  border: 1px solid #a8dfa0;
+  border-radius: 14px;
+  color: #1a6b12;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 14px 18px;
+}
+
+.upload-guide {
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 24px;
+}
+
+.upload-guide h3 {
+  color: var(--text-h);
+  font-size: 15px;
+  font-weight: 800;
+  margin: 0 0 14px;
+}
+
+.upload-guide ol {
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.8;
+  margin: 0;
+  padding-left: 20px;
+}
+
+.creator-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  position: sticky;
+  top: 80px;
+}
+
+.preview-label {
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.canvas-wrapper {
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
+  width: 270px;
+  height: 480px;
+}
+
+.canvas-wrapper canvas {
+  display: block;
+  width: 270px;
+  height: 480px;
+}
+
+.canvas-size {
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 12px;
+  margin: 0;
+  opacity: 0.6;
+}
+
+@media (max-width: 960px) {
+  .tiktok-creator {
+    padding: 24px 18px;
+  }
+
+  .creator-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .creator-preview {
+    position: static;
+    order: -1;
+  }
+}
